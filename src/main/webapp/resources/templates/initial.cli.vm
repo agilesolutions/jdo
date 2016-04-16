@@ -1,0 +1,15 @@
+Profile name = $Name
+
+#foreach( $ds in $Datasources)
+/subsystem=security/security-domain=EncryptedPassword$ds.Name:add()
+/subsystem=security/security-domain=EncryptedPassword$ds.Name/authentication=classic:add(login-modules=[{"code" => "SecureIdentity", "flag" => "required","module-options" => {"username" =>"$ds.UserName", "password" => "$ds.Password"}}])
+#if ( $ds.Distributed == "Y" )
+xa-data-source add --name=$ds.Name --jndi-name=$ds.JndiName --security-domain=EncryptedPassword$ds.Name --driver-name=$ds.Driver --xa-datasource-class=$ds.DatasourceClass
+/subsystem=datasources/xa-data-source=$ds.Name/xa-datasource-properties=URL:add(value="$ds.URL")
+xa-data-source enable --name=$ds.Name
+#else
+data-source add --name=$ds.Name --jndi-name=$ds.JndiName --security-domain=EncryptedPassword$ds.Name --driver-name=$ds.Driver --datasource-class=$ds.DatasourceClass --connection-url="$ds.Url"
+data-source enable --name=$ds.Name
+#end
+
+#end

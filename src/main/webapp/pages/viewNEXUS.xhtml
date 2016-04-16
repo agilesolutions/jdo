@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>NEXUS browse</title>
+
+
+</h:head>
+
+<h:body>
+
+	<f:facet name="last">
+		<h:outputStylesheet library="default" name="css/default.css" />
+	</f:facet>
+
+
+
+	<h:form>
+
+		<p:contextMenu for="table-wrapper" id="menu">
+			<p:menuitem icon="ui-icon-arrowrefresh-1-w" value="Save"
+				actionListener="#{profileController.addDeployment}" />
+		</p:contextMenu>
+
+
+		<p:growl id="growl" sticky="true" showDetail="true" />
+		<p:messages id="messages" />
+		<h:panelGroup layout="block" id="table-wrapper">
+
+			<p:panel id="updatePanel" autoUpdate="false">
+				<h:panelGrid columns="2" columnClasses="label, value">
+
+					<h:outputText value="GroupIdentification" />
+					<h:inputText
+						value="#{profileController.deployment.groupIdentification}"
+						required="true" requiredMessage="Please enter a valid group id"
+						maxlength="60" size="60" />
+
+					<h:outputText value="Artifact" />
+					<h:inputText value="#{profileController.deployment.artifact}"
+						required="true"
+						requiredMessage="Please enter a valid artifact name"
+						maxlength="40" size="40" />
+
+					<h:outputText value="Version" />
+					<h:inputText value="#{profileController.deployment.version}"
+						maxlength="10" size="10" />
+
+					<h:outputText value="type" />
+					<h:inputText value="#{profileController.deployment.type}"
+						maxlength="3" size="3" />
+
+				</h:panelGrid>
+
+				<h:panelGrid columns="1">
+					<p:dataTable var="artifact" value="#{profileController.artefacts}"
+						rowKey="#{artifact.id}" paginator="true"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rows="12" selection="#{profileController.selectedArtefact}"
+						selectionMode="single" id="artifactTable">
+
+						<f:facet name="header">
+            List of Artifacts from Nexus
+        </f:facet>
+
+						<p:column headerText="Id">
+            #{artifact.id}
+        </p:column>
+
+						<p:column headerText="ArtifactId">
+            #{artifact.artifactId}
+        </p:column>
+
+						<p:column headerText="GroupId">
+            #{artifact.groupId}
+        </p:column>
+
+						<p:column headerText="version">
+            #{artifact.version}
+        </p:column>
+
+						<p:column headerText="packaging">
+            #{artifact.packaging}
+        </p:column>
+
+					</p:dataTable>
+				</h:panelGrid>
+
+				<p:commandButton value="Search" update="growl,updatePanel"
+					process="updatePanel"
+					actionListener="#{profileController.searchNexus}" />
+
+				<p:commandButton value="Close" update="growl" process="updatePanel" immediate="true"
+					actionListener="#{profileController.closeNEXUSView}" />
+			</p:panel>
+		</h:panelGroup>
+
+	</h:form>
+</h:body>
+
+</html>

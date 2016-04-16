@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>Details</title>
+
+
+</h:head>
+
+<h:body>
+
+	<f:metadata>
+		<f:event type="preRenderView" listener="#{profileController.renderForm}" />
+	</f:metadata>
+
+	<f:facet name="last">
+		<h:outputStylesheet library="default" name="css/default.css" />
+	</f:facet>
+
+	<h:form>
+		<p:growl id="growl" sticky="true" showDetail="true" />
+		<p:messages id="messages" />
+
+		<p:panel id="updatePanel" autoUpdate="false">
+			<h:panelGrid columns="2" columnClasses="label, value"
+				id="injectPoint">
+
+			</h:panelGrid>
+
+			<p:commandButton value="Save" update="growl,updatePanel"
+				process="updatePanel"
+				actionListener="#{profileController.updateProfile()}" />
+
+			<p:commandButton value="Close" update="growl" process="updatePanel"
+				actionListener="#{profileController.closeView}" />
+		</p:panel>
+
+	</h:form>
+</h:body>
+
+</html>

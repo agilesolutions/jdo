@@ -1,0 +1,23 @@
+select {
+	font-size: 10px;
+}
+
+option {
+	font-size: 10px;
+}
+
+li.ui-selectonemenu-item {
+	font-size: 10px;
+}
+
+.ui-autocomplete-panel {
+	font-size: 10px;
+}
+
+.ui-wizard-step-title {
+	font-size: 10px;
+}
+
+.ui-wizard-step-titles {
+	font-size: 10px;
+}

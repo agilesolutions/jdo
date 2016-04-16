@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+<body>
+	<ui:composition>
+		<p:menubar id="menubar">
+			<p:submenu label="Profiles" icon="ui-icon-home">
+				<p:menuitem value="JBoss Hosts" url="/pages/viewProfile.jsf"
+					icon="ui-icon-shuffle" />
+				<p:menuitem value="Quit" url="https://www.docker.com/"
+					icon="ui-icon-power" />
+			</p:submenu>
+
+			<p:submenu label="Docker" icon="ui-icon-cart">
+				<p:menuitem value="pull"
+					url="/pages/viewNotSupported.jsf" icon="ui-icon-folder-shuffle" />
+				<p:menuitem value="push"
+					url="/pages/viewNotSupported.jsf" icon="ui-icon-folder-shuffle" />
+				<p:menuitem value="build"
+					url="/pages/viewNotSupported.jsf" icon="ui-icon-folder-shuffle" />
+			</p:submenu>
+
+
+			<p:submenu label="Help" icon="ui-icon-help">
+				<p:menuitem value="Deployment Automation" target="_blank"
+					url="http://camunda.com/" icon="ui-icon-info" />
+				<p:menuitem value="About Technology" target="_blank"
+					url="http://www.mastertheboss.com/indici/java-ee-6-tutorials"
+					icon="ui-icon-info" />
+			</p:submenu>
+
+
+			<p:menuitem value="Quit" url="https://www.docker.com/"
+				icon="ui-icon-close" />
+
+		</p:menubar>
+
+		<p:ajaxStatus
+			style="width:64px;height:64px;position:fixed;right:5px;bottom:60px">
+			<f:facet name="start">
+				<p:graphicImage value="/resources/images/loading.gif" />
+			</f:facet>
+
+			<f:facet name="complete">
+				<h:outputText value="" />
+			</f:facet>
+		</p:ajaxStatus>
+
+	</ui:composition>
+</body>
+</html>
+
+
