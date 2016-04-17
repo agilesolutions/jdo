@@ -2,7 +2,7 @@ package com.agilesolutions.jboss.model;
 
 import com.google.gson.annotations.Expose;
 import com.agilesolutions.jboss.annotations.Attribute;
-import com.agilesolutions.jboss.annotations.Type;
+import com.agilesolutions.jboss.annotations.GUIType;
 
 public class Deployment {
 	@Expose(serialize = true)
@@ -22,7 +22,7 @@ public class Deployment {
 	@Expose(serialize = true)
 	private String version;
 
-	@Attribute(order = 2, length = 40, type = Type.INPUT)
+	@Attribute(order = 2, length = 40, type = GUIType.INPUT)
 	public String getArtifact() {
 		return artifact;
 	}
@@ -31,7 +31,7 @@ public class Deployment {
 		this.artifact = artifact;
 	}
 
-	@Attribute(order = 1, length = 80, type = Type.INPUT)
+	@Attribute(order = 1, length = 80, type = GUIType.INPUT)
 	public String getGroupIdentification() {
 		return groupIdentification;
 	}
@@ -56,7 +56,7 @@ public class Deployment {
 		this.versionnumber = versionnumber;
 	}
 
-	@Attribute(order = 3, length = 4, type = Type.INPUT)
+	@Attribute(order = 3, length = 4, type = GUIType.INPUT)
 	public String getType() {
 		return type;
 	}
@@ -65,7 +65,7 @@ public class Deployment {
 		this.type = type;
 	}
 
-	@Attribute(order = 4, length = 10, type = Type.INPUT)
+	@Attribute(order = 4, length = 10, type = GUIType.INPUT)
 	public String getVersion() {
 		return version;
 	}

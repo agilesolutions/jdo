@@ -251,6 +251,8 @@ public class ProfileController extends AbstractController implements Serializabl
 			e.printStackTrace();
 		}
 
+		submitMessage(FacesMessage.SEVERITY_INFO, String.format("Profile %s updated...", profile.getName()), true);
+
 	}
 
 	public void addComponent() {
@@ -424,6 +426,9 @@ public class ProfileController extends AbstractController implements Serializabl
 		refreshProfiles();
 
 		RequestContext.getCurrentInstance().closeDialog("viewComponent");
+		
+		submitMessage(FacesMessage.SEVERITY_INFO, String.format("Profile %s updated...", profile.getName()), true);
+
 
 	}
 

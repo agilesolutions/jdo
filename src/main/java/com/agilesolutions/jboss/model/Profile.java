@@ -9,7 +9,7 @@ import com.google.gson.annotations.Expose;
 import com.agilesolutions.jboss.annotations.Attribute;
 import com.agilesolutions.jboss.annotations.Component;
 import com.agilesolutions.jboss.annotations.Root;
-import com.agilesolutions.jboss.annotations.Type;
+import com.agilesolutions.jboss.annotations.GUIType;
 
 @Root
 public class Profile {
@@ -88,7 +88,7 @@ public class Profile {
 	@Expose(serialize = true)
 	private List<Driver> drivers = new ArrayList<>();
 
-	@Attribute(order = 1, length = 30, type = Type.INPUT)
+	@Attribute(order = 1, length = 30, type = GUIType.INPUT)
 	public String getName() {
 		return name;
 	}
@@ -114,7 +114,7 @@ public class Profile {
 		this.releaseTag = releaseTag;
 	}
 
-	@Attribute(order = 4, length = 40, type = Type.AUTOCOMPLETE)
+	@Attribute(order = 4, length = 40, type = GUIType.AUTOCOMPLETE)
 	public String getDomain() {
 		return domain;
 	}
@@ -156,7 +156,7 @@ public class Profile {
 		this.dynatrace = dynatrace;
 	}
 
-	@Attribute(order = 2, length = 60, type = Type.INPUT)
+	@Attribute(order = 2, length = 60, type = GUIType.INPUT)
 	public String getDescription() {
 		return description;
 	}
@@ -311,7 +311,7 @@ public class Profile {
 		this.component = component;
 	}
 
-	@Attribute(order = 3, length = 30, type = Type.LIST)
+	@Attribute(order = 3, length = 30, type = GUIType.LIST)
 	public String getEnvironment() {
 		return environment;
 	}

@@ -1,7 +1,7 @@
 package com.agilesolutions.jboss.model;
 
 import com.agilesolutions.jboss.annotations.Attribute;
-import com.agilesolutions.jboss.annotations.Type;
+import com.agilesolutions.jboss.annotations.GUIType;
 import com.google.gson.annotations.Expose;
 
 
@@ -21,14 +21,14 @@ public class AdminObject {
 	@Expose(serialize = true)
 	private String description;
 
-	@Attribute(order = 1, length = 20, type = Type.INPUT)
+	@Attribute(order = 1, length = 20, type = GUIType.INPUT)
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
-	@Attribute(order = 2, length = 60, type = Type.INPUT)
+	@Attribute(order = 2, length = 60, type = GUIType.INPUT)
 	public String getClassName() {
 		return className;
 	}
@@ -47,14 +47,14 @@ public class AdminObject {
 	public void setId(Integer id) {
 		this.id = id;
 	}
-	@Attribute(order = 3, length = 80, type = Type.INPUT)
+	@Attribute(order = 3, length = 80, type = GUIType.INPUT)
 	public String getConfigProperty() {
 		return configProperty;
 	}
 	public void setConfigProperty(String configProperty) {
 		this.configProperty = configProperty;
 	}
-	@Attribute(order = 4, length = 60, type = Type.INPUT)
+	@Attribute(order = 4, length = 60, type = GUIType.INPUT)
 	public String getJndiName() {
 		return jndiName;
 	}

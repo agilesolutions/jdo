@@ -2,7 +2,7 @@ package com.agilesolutions.jboss.model;
 
 import com.google.gson.annotations.Expose;
 import com.agilesolutions.jboss.annotations.Attribute;
-import com.agilesolutions.jboss.annotations.Type;
+import com.agilesolutions.jboss.annotations.GUIType;
 
 
 public class Logger {
@@ -12,6 +12,8 @@ public class Logger {
 	private String logLevel;
 	@Expose(serialize = true)
 	private String name;
+	@Expose(serialize = true)
+	private String description;
 	@Expose(serialize = true)
 	private Integer id;
 	@Expose(serialize = true)
@@ -23,14 +25,14 @@ public class Logger {
 	public void setParent(Boolean parent) {
 		this.parent = parent;
 	}
-	@Attribute(order = 2, length = 10, type = Type.INPUT)	
+	@Attribute(order = 2, length = 10, type = GUIType.INPUT)	
 	public String getLogLevel() {
 		return logLevel;
 	}
 	public void setLogLevel(String logLevel) {
 		this.logLevel = logLevel;
 	}
-	@Attribute(order = 1, length = 30, type = Type.INPUT)	
+	@Attribute(order = 1, length = 30, type = GUIType.INPUT)	
 	public String getName() {
 		return name;
 	}
@@ -50,7 +52,12 @@ public class Logger {
 		this.version = version;
 	}
 	
-	
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
 	@Override
 	public String toString() {
 		return this.name;

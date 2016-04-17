@@ -52,12 +52,6 @@ public class ImportJson {
 			// convert the json string back to object
 			WeblogicJson obj = gson.fromJson(jsonPrettyPrintString, WeblogicJson.class);
 
-			// gson = new GsonBuilder().setPrettyPrinting().create();
-			//
-			// // Pretty print
-			// String prettyStaff1 = gson.toJson(obj);
-			// System.out.println(prettyStaff1);
-
 			// map to profiles
 			for (Server server : obj.getDomain().getServer()) {
 
@@ -137,7 +131,7 @@ public class ImportJson {
 			}
 
 			if (p.getName().equals("javax.net.ssl.trustStorePassword")) {
-				ds.setPassword(p.getName());
+				ds.setPassword("changeme");
 			}
 
 		});

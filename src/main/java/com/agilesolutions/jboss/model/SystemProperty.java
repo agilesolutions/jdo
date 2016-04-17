@@ -2,7 +2,7 @@ package com.agilesolutions.jboss.model;
 
 import com.google.gson.annotations.Expose;
 import com.agilesolutions.jboss.annotations.Attribute;
-import com.agilesolutions.jboss.annotations.Type;
+import com.agilesolutions.jboss.annotations.GUIType;
 
 
 public class SystemProperty {
@@ -17,7 +17,7 @@ public class SystemProperty {
 	@Expose(serialize = true)
 	private String value;
 
-	@Attribute(order = 1, length = 30, type = Type.INPUT)	
+	@Attribute(order = 1, length = 30, type = GUIType.INPUT)	
 	public String getName() {
 		return name;
 	}
@@ -43,7 +43,7 @@ public class SystemProperty {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	@Attribute(order = 2, length = 60, type = Type.INPUT)	
+	@Attribute(order = 2, length = 60, type = GUIType.INPUT)	
 	public String getValue() {
 		return value;
 	}

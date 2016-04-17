@@ -14,6 +14,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 
+import com.agilesolutions.jboss.cdi.SystemProperty;
 import com.agilesolutions.jboss.model.Domains;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,6 +29,18 @@ public class DomainDao {
 
 	@Inject
 	private Git git;
+
+	@Inject
+	@SystemProperty("git.url")
+	String gitUrl;
+
+	@Inject
+	@SystemProperty("git.user")
+	String gitUser;
+
+	@Inject
+	@SystemProperty("git.password")
+	String gitPassword;
 
 	public void save(Domains domains) {
 
@@ -56,9 +69,11 @@ public class DomainDao {
 
 			git.add().addFilepattern(".").call();
 
-			git.commit().setCommitter("jenkins", "jenkins@agilesolutions.com").setMessage("Domains configuration changed").call();
+			git.commit().setCommitter(gitUser, "robert.rong@agilesolutions.com")
+					.setMessage("Domains configuration changed").call();
 
-			git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider("robertrong", "amsterdam2016")).call();
+			git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUser, gitPassword))
+					.call();
 
 		} catch (Exception e) {
 			logger.error("Error saving profile ", e);

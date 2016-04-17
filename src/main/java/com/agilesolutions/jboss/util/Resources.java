@@ -7,6 +7,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
@@ -14,8 +15,11 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.agilesolutions.jboss.cdi.SystemProperty;
+
 /**
- * This class uses CDI to alias Java EE resources, such as the persistence context, to CDI beans
+ * This class uses CDI to alias Java EE resources, such as the persistence
+ * context, to CDI beans
  * 
  * <p>
  * Example injection on a managed bean field:
@@ -27,6 +31,10 @@ import org.slf4j.LoggerFactory;
  * </pre>
  */
 public class Resources {
+
+	@Inject
+	@SystemProperty("git.url")
+	String gitUrl;
 
 	@Produces
 	public Git produceGIT(InjectionPoint injectionPoint) {
@@ -41,7 +49,9 @@ public class Resources {
 			theDir.mkdir();
 
 			try {
-				git = Git.cloneRepository().setURI("https://robertrong:amsterdam2016@bitbucket.org/robertrong/profiles.git").setDirectory(theDir).call();
+				git = Git.cloneRepository()
+						.setURI(gitUrl)
+						.setDirectory(theDir).call();
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -51,11 +61,11 @@ public class Resources {
 
 			FileRepositoryBuilder builder = new FileRepositoryBuilder();
 			try {
-				Repository repository = builder.setGitDir(new File(theDir + File.separator + ".git")).readEnvironment().findGitDir()
-				                .build();
-				
+				Repository repository = builder.setGitDir(new File(theDir + File.separator + ".git")).readEnvironment()
+						.findGitDir().build();
+
 				git = new Git(repository);
-				
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -76,5 +86,7 @@ public class Resources {
 	public FacesContext produceFacesContext() {
 		return FacesContext.getCurrentInstance();
 	}
+
+
 
 }

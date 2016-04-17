@@ -24,9 +24,9 @@ import com.agilesolutions.jboss.model.Profile;
 @Stateless
 public class TemplateProcessor {
 	
-	private static final String TEMPLATE_DIR = System.getProperty("jboss.server.data.dir") + "/store/template";
+	private static final String TEMPLATE_DIR = System.getProperty("jboss.server.data.dir") + "/database/template";
 	
-	private static final String GENERATED_DIR = System.getProperty("jboss.server.data.dir") + "/store/generated";
+	private static final String GENERATED_DIR = System.getProperty("jboss.server.data.dir") + "/database/generated";
 
 	@Inject
 	private Logger logger;
@@ -71,11 +71,11 @@ public class TemplateProcessor {
 			fileWriter.write(writer.toString());
 			fileWriter.close();
 			
-			git.add().addFilepattern(".").call();
-			
-			git.commit().setCommitter("jenkins", "jenkins@agilesolutions.com").setMessage(String.format("Generated JBoss CLI batch for profile %s", profile.getName())).call();
-			
-			git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider("jenkins", "jenkins")).call();
+//			git.add().addFilepattern(".").call();
+//			
+//			git.commit().setCommitter("jenkins", "jenkins@agilesolutions.com").setMessage(String.format("Generated JBoss CLI batch for profile %s", profile.getName())).call();
+//			
+//			git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider("jenkins", "jenkins")).call();
 
 		} catch (Exception e) {
 			//logger.error("Error saving Docker file ", e);

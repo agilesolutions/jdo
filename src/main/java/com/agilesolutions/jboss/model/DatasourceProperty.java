@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import com.google.gson.annotations.Expose;
 import com.agilesolutions.jboss.annotations.Attribute;
-import com.agilesolutions.jboss.annotations.Type;
+import com.agilesolutions.jboss.annotations.GUIType;
 
 public class DatasourceProperty implements Serializable {
 
@@ -22,7 +22,7 @@ public class DatasourceProperty implements Serializable {
 	@Expose(serialize = true)
 	private String value;
 
-	@Attribute(order = 1, length = 30, type = Type.INPUT)
+	@Attribute(order = 1, length = 30, type = GUIType.INPUT)
 	public String getName() {
 		return name;
 	}
@@ -31,7 +31,7 @@ public class DatasourceProperty implements Serializable {
 		this.name = name;
 	}
 
-	@Attribute(order = 2, length = 80, type = Type.INPUT)
+	@Attribute(order = 2, length = 80, type = GUIType.INPUT)
 	public String getValue() {
 		return value;
 	}
@@ -40,7 +40,7 @@ public class DatasourceProperty implements Serializable {
 		this.value = value;
 	}
 
-	@Attribute(order = 3, length = 30, type = Type.INPUT)
+	@Attribute(order = 3, length = 30, type = GUIType.INPUT)
 	public String getDescription() {
 		return description;
 	}

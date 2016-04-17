@@ -13,6 +13,6 @@ public @interface Attribute {
 	
 	int length();
 
-	Type type() default Type.INPUT;
+	GUIType type() default GUIType.INPUT;
 
 }

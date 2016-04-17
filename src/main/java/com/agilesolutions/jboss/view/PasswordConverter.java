@@ -68,49 +68,51 @@ public class PasswordConverter implements Converter {
 			return "";
 		}
 		
-		byte kbytes[] = "jaas is the way".getBytes();
-		SecretKeySpec key = new SecretKeySpec(kbytes, "Blowfish");
-		BigInteger n = new BigInteger(value.toString(), 16);
-		byte encoding[] = n.toByteArray();
-		if (encoding.length % 8 != 0) {
-			int length = encoding.length;
-			int newLength = (length / 8 + 1) * 8;
-			int pad = newLength - length;
-			byte old[] = encoding;
-			encoding = new byte[newLength];
-			for (int i = old.length - 1; i >= 0; i--) {
-				encoding[i + pad] = old[i];
-			}
-
-			if (n.signum() == -1) {
-				for (int i = 0; i < newLength - length; i++) {
-					encoding[i] = -1;
-				}
-
-			}
-		}
-		Cipher cipher;
-		try {
-			cipher = Cipher.getInstance("Blowfish");
-			cipher.init(2, key);
-			byte decode[] = cipher.doFinal(encoding);
-			return new String(decode);
-		} catch (NoSuchAlgorithmException e) {
-			LOGGER.error("NoSuchAlgorithmException : ", e);
-			throw new IllegalStateException(e);
-		} catch (NoSuchPaddingException e) {
-			LOGGER.error("NoSuchPaddingExceptionn : ", e);
-			throw new IllegalStateException(e);
-		} catch (InvalidKeyException e) {
-			LOGGER.error("InvalidKeyException : ", e);
-			throw new IllegalStateException(e);
-		} catch (IllegalBlockSizeException e) {
-			LOGGER.error("IllegalBlockSizeException : ", e);
-			throw new IllegalStateException(e);
-		} catch (BadPaddingException e) {
-			LOGGER.error("BadPaddingException : ", e);
-			throw new IllegalStateException(e);
-		}
+		return (String) value;
+		
+//		byte kbytes[] = "jaas is the way".getBytes();
+//		SecretKeySpec key = new SecretKeySpec(kbytes, "Blowfish");
+//		BigInteger n = new BigInteger(value.toString(), 16);
+//		byte encoding[] = n.toByteArray();
+//		if (encoding.length % 8 != 0) {
+//			int length = encoding.length;
+//			int newLength = (length / 8 + 1) * 8;
+//			int pad = newLength - length;
+//			byte old[] = encoding;
+//			encoding = new byte[newLength];
+//			for (int i = old.length - 1; i >= 0; i--) {
+//				encoding[i + pad] = old[i];
+//			}
+//
+//			if (n.signum() == -1) {
+//				for (int i = 0; i < newLength - length; i++) {
+//					encoding[i] = -1;
+//				}
+//
+//			}
+//		}
+//		Cipher cipher;
+//		try {
+//			cipher = Cipher.getInstance("Blowfish");
+//			cipher.init(2, key);
+//			byte decode[] = cipher.doFinal(encoding);
+//			return new String(decode);
+//		} catch (NoSuchAlgorithmException e) {
+//			LOGGER.error("NoSuchAlgorithmException : ", e);
+//			throw new IllegalStateException(e);
+//		} catch (NoSuchPaddingException e) {
+//			LOGGER.error("NoSuchPaddingExceptionn : ", e);
+//			throw new IllegalStateException(e);
+//		} catch (InvalidKeyException e) {
+//			LOGGER.error("InvalidKeyException : ", e);
+//			throw new IllegalStateException(e);
+//		} catch (IllegalBlockSizeException e) {
+//			LOGGER.error("IllegalBlockSizeException : ", e);
+//			throw new IllegalStateException(e);
+//		} catch (BadPaddingException e) {
+//			LOGGER.error("BadPaddingException : ", e);
+//			throw new IllegalStateException(e);
+//		}
 	}
 
 }

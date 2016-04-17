@@ -16,7 +16,7 @@ import org.reflections.Reflections;
 import com.agilesolutions.jboss.annotations.Attribute;
 import com.agilesolutions.jboss.annotations.Component;
 import com.agilesolutions.jboss.annotations.Root;
-import com.agilesolutions.jboss.annotations.Type;
+import com.agilesolutions.jboss.annotations.GUIType;
 
 /**
  * read https://code.google.com/p/reflections/
@@ -71,7 +71,7 @@ public class Reflect {
 
 	}
 
-	public static Type getType(Method someMethod) {
+	public static GUIType getType(Method someMethod) {
 
 		return someMethod.getAnnotation(Attribute.class).type();
 

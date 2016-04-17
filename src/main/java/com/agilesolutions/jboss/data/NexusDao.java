@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.util.List;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
@@ -16,6 +17,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
+import com.agilesolutions.jboss.cdi.SystemProperty;
 import com.agilesolutions.jboss.model.Artefact;
 import com.agilesolutions.jboss.model.SearchResults;
 
@@ -23,6 +25,11 @@ import com.agilesolutions.jboss.model.SearchResults;
 public class NexusDao {
 
 	private static final String NEXUS_URL = "http://nexus.agilesolutions.com";
+	
+	@Inject
+	@SystemProperty("nexus.url")
+	String nexusUrl;
+
 
 	public List<Artefact> listArtefacts(String groupId, String artefact, String version, String type) throws Exception {
 
@@ -31,9 +38,9 @@ public class NexusDao {
 			HttpClient httpclient = new DefaultHttpClient();
 			// compose URI for accessing Nexus
 			StringBuilder builder = new StringBuilder();
-			builder.append(NEXUS_URL);
+			builder.append(nexusUrl);
 
-			builder.append("/service/local/data_index/repositories/bjb-releases/content");
+			builder.append("/service/local/data_index/repositories/releases/content");
 			builder.append("?g=");
 			builder.append(groupId);
 			builder.append("&a=");

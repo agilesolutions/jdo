@@ -5,13 +5,15 @@ import java.util.List;
 
 import com.google.gson.annotations.Expose;
 import com.agilesolutions.jboss.annotations.Attribute;
-import com.agilesolutions.jboss.annotations.Type;
+import com.agilesolutions.jboss.annotations.GUIType;
 
 public class Handler {
 	@Expose(serialize = true)
 	private Integer id;
 	@Expose(serialize = true)
 	private String name;
+	@Expose(serialize = true)
+	private String description;
 	@Expose(serialize = true)
 	private String formatter;
 	@Expose(serialize = true)
@@ -33,14 +35,14 @@ public class Handler {
 	public void setId(Integer id) {
 		this.id = id;
 	}
-	@Attribute(order = 1, length = 30, type = Type.INPUT)	
+	@Attribute(order = 1, length = 30, type = GUIType.INPUT)	
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
-	@Attribute(order = 2, length = 60, type = Type.INPUT)	
+	@Attribute(order = 2, length = 60, type = GUIType.INPUT)	
 	public String getFormatter() {
 		return formatter;
 	}
@@ -84,6 +86,12 @@ public class Handler {
 		this.version = version;
 	}
 
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
 	@Override
 	public String toString() {
 		return this.name;

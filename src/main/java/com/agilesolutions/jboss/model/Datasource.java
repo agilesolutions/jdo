@@ -6,7 +6,7 @@ import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.agilesolutions.jboss.annotations.Attribute;
 import com.agilesolutions.jboss.annotations.Component;
-import com.agilesolutions.jboss.annotations.Type;
+import com.agilesolutions.jboss.annotations.GUIType;
 
 public class Datasource {
 	@Expose(serialize = true)
@@ -35,7 +35,7 @@ public class Datasource {
 	@Expose(serialize = true)
 	private List<DatasourceProperty> properties = new ArrayList<>();
 
-	@Attribute(order = 5, length = 50, type = Type.INPUT)	
+	@Attribute(order = 5, length = 50, type = GUIType.INPUT)	
 	public String getDatasourceClass() {
 		return datasourceClass;
 	}
@@ -44,7 +44,7 @@ public class Datasource {
 		this.datasourceClass = datasourceClass;
 	}
 
-	@Attribute(order = 6, length = 25, type = Type.PASSWORD)
+	@Attribute(order = 6, length = 25, type = GUIType.PASSWORD)
 	public String getPassword() {
 		return password;
 	}
@@ -61,7 +61,7 @@ public class Datasource {
 		this.driver = driver;
 	}
 
-	@Attribute(order = 1, length = 30, type = Type.INPUT)
+	@Attribute(order = 1, length = 30, type = GUIType.INPUT)
 	public String getName() {
 		return name;
 	}
@@ -86,7 +86,7 @@ public class Datasource {
 		this.id = id;
 	}
 
-	@Attribute(order = 6, length = 25, type = Type.PASSWORD)
+	@Attribute(order = 6, length = 25, type = GUIType.INPUT)
 	public String getUserName() {
 		return userName;
 	}
@@ -103,7 +103,7 @@ public class Datasource {
 		this.version = version;
 	}
 
-	@Attribute(order = 4, length = 100, type = Type.INPUT)
+	@Attribute(order = 4, length = 100, type = GUIType.INPUT)
 	public String getUrl() {
 		return url;
 	}
@@ -122,7 +122,7 @@ public class Datasource {
 		this.properties = properties;
 	}
 
-	@Attribute(order = 3, length = 40, type = Type.INPUT)
+	@Attribute(order = 3, length = 40, type = GUIType.INPUT)
 	public String getJndiName() {
 		return jndiName;
 	}
@@ -131,7 +131,7 @@ public class Datasource {
 		this.jndiName = jndiName;
 	}
 
-	@Attribute(order = 2, length = 80, type = Type.INPUT)
+	@Attribute(order = 2, length = 80, type = GUIType.INPUT)
 	public String getDescription() {
 		return description;
 	}
