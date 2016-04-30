@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "!!! Pre UN-installation work is going here...."
+echo "/sbin/service ${Prefix} stop"
+/sbin/service ${Prefix} stop
+

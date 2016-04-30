@@ -1,0 +1,25 @@
+#!/bin/bash
+
+SCRIPT="./cli/consoleOff.cli"
+
+export JAVA_HOME=/u01/app/java/${Prefix}
+export JBOSS_HOME=/u01/app/jboss/${Prefix}
+
+PATH=$PATH:${JAVA_HOME}/bin
+
+BASEDIR="/u01/app/admrun/${Prefix}"
+CONFDIR="${BASEDIR}/configuration"
+
+PORTOFFSET=`grep "standard-sockets" ${CONFDIR}/standalone.xml | grep port-offset | cut -f6 -d'"'`
+BASEPORT=`grep "management-native" ${CONFDIR}/standalone.xml | grep port | cut -f6 -d'"'`
+
+if [ -z "$PORTOFFSET" ];
+then
+        CLIPORT=$BASEPORT
+else
+        let CLIPORT=$BASEPORT+$PORTOFFSET
+fi
+
+export JAVA_OPTS="-Djboss.server.config.user.dir=${CONFDIR} -Djboss.domain.config.user.dir=${BASEDIR}"
+${JBOSS_HOME}/bin/jboss-cli.sh --controller=localhost:${CLIPORT} --file=${SCRIPT}
+

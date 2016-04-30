@@ -1,0 +1,13 @@
+[Unit]
+Description=${Prefix} Jboss Service
+After=syslog.target network.target
+
+[Service]
+Type=forking
+ExecStart=/etc/init.d/${Prefix} start
+ExecStop=/etc/init.d/${Prefix} stop
+TimeoutStartSec=180
+
+
+[Install]
+WantedBy=multi-user.target

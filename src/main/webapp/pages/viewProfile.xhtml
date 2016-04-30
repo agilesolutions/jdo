@@ -21,6 +21,8 @@
 					onclick="PF('generateDialog').show();" />
 				<p:menuitem value="NEXUS" icon="/resources/images/nexus.png"
 					actionListener="#{profileController.showNexus()}" />
+				<p:menuitem value="PACKAGE" icon="/resources/images/package.png"
+					actionListener="#{profileController.showPackaging()}" />
 			</p:dock>
 
 			<p:contextMenu for="table-wrapper" id="menu">
@@ -37,9 +39,15 @@
 				<p:menuitem value="Delete" icon="ui-icon-close"
 					onclick="PF('confirmation').show();" />
 				<p:separator />
-				<p:menuitem value="Import" icon="/resources/images/import.png"
-					onclick="PF('resourceDialog').show();" />
+				<!-- p:menuitem value="Import" icon="/resources/images/import.png"
+					onclick="PF('resourceDialog').show();" /-->
 			</p:contextMenu>
+
+			<p:contextMenu for="script">
+				<p:menuitem value="Copy to Clipboard" icon="ui-icon-copy"
+					onclick="window.clipboardData.setData('text',document.getElementById('form:script').innerText)" />
+			</p:contextMenu>
+
 
 			<h:panelGroup layout="block" id="table-wrapper">
 
@@ -51,10 +59,10 @@
 
 					<f:facet name="header" id="headerFacet">
 						<h:outputText style="margin-right:10px;font-weight:bold"
-							value="Available Filters : " />
+							value="Select Domain : " />
 
 						<p:autoComplete value="#{profileController.domain}"
-							completeMethod="#{profileController.completeName}"
+							completeMethod="#{profileController.completeDomain}"
 							style="font-size: 9px;">
 							<p:ajax event="change" update=":form:messages,:form:tree"
 								listener="#{profileController.selectDomain}" />
@@ -114,21 +122,51 @@
 			</p:dialog>
 
 
-			<p:dialog header="Import Weblogic Configuration"
+			<p:dialog header="Import Existing Configuration"
 				widgetVar="importDialog" resizable="false" id="dialogImport"
 				closable="false">
 
 				<h:panelGrid id="displayImport" columns="2" cellpadding="4">
 
 					<f:facet name="header">
-						<h:outputText value="Import Weblogic Configuration" />
+						<h:outputText value="Import existing JBoss Configuration" />
 					</f:facet>
 
-					<p:fileUpload value="#{profileController.file}" mode="advanced"
-						label="Select WebLogic config XML file to import"
+					<p:fileUpload mode="advanced"
+						label="Select JBoss standalone XML file to import"
 						sizeLimit="30720000" showButtons="false"
-						update="messages,:form:tree"
+						update="messages,specifyImport,importFeedback" process="specifyImport"
 						fileUploadListener="#{profileController.upload}" />
+				</h:panelGrid>
+				<h:panelGrid id="specifyImport" columns="2" cellpadding="4">
+
+					<h:outputText value="Domain" />
+
+					<p:autoComplete value="#{profileController.domain}"
+						completeMethod="#{profileController.completeDomain}"
+						update="specifyImport" style="font-size: 9px;">
+						<p:ajax event="change" update=":form:messages,:form:tree"
+							listener="#{profileController.selectDomainName}" />
+						<p:ajax event="itemSelect" update=":form:messages,:form:tree"
+							listener="#{profileController.selectDomainName}" />
+					</p:autoComplete>
+
+					<h:outputText value="Host" />
+
+					<p:autoComplete value="#{profileController.host}"
+						completeMethod="#{profileController.completeHostName}"
+						update="specifyImport" style="font-size: 9px;">
+						<p:ajax event="change" update=":form:messages,:form:tree"
+							listener="#{profileController.selectHost}" />
+						<p:ajax event="itemSelect" update=":form:messages,:form:tree"
+							listener="#{profileController.selectHost}" />
+					</p:autoComplete>
+				</h:panelGrid>
+				<h:panelGrid columns="" cellpadding="4">
+
+					<p:inputTextarea rows="36" cols="200" maxlength="1000" id="importFeedback"
+						counterTemplate="{0} characters remaining." autoResize="false"
+						value="#{profileController.feedback}" readonly="true" />
 
 				</h:panelGrid>
 				<p:commandButton value="Close"
@@ -146,6 +184,7 @@
 					<f:facet name="header">
 						<h:outputText value="Import Weblogic Resources" />
 					</f:facet>
+					<h:outputText value="Browse" />
 
 					<p:fileUpload value="#{profileController.file}" mode="advanced"
 						label="Select WebLogic datasource or jms config XML file to import"
@@ -153,15 +192,13 @@
 						update="messages,:form:tree"
 						fileUploadListener="#{profileController.uploadResource}" />
 
+
 				</h:panelGrid>
 				<p:commandButton value="Close"
 					oncomplete="PF('resourceDialog').hide();"
 					update="messages,:form:tree" />
 
 			</p:dialog>
-
-
-
 
 
 			<p:dialog header="Manage Domains" id="dialogSelection"
@@ -172,7 +209,7 @@
 
 					<h:outputText value="Name" />
 					<p:autoComplete value="#{profileController.domain}"
-						completeMethod="#{profileController.completeName}"
+						completeMethod="#{profileController.completeDomain}"
 						style="font-size: 9px;">
 					</p:autoComplete>
 

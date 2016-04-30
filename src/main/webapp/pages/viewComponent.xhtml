@@ -37,7 +37,7 @@
 				actionListener="#{profileController.updateProfile()}" />
 
 			<p:commandButton value="Close" update="growl" process="updatePanel"
-				actionListener="#{profileController.closeView}" />
+				actionListener="#{profileController.closeView}" immediate="true"/>
 		</p:panel>
 
 	</h:form>

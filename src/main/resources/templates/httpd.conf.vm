@@ -1,0 +1,114 @@
+
+#foreach($profile in $Profiles)
+<VirtualHost *:80>
+
+#set ($cname = "${profile.HostName}.${profile.DomainName}")
+#set ($aliasString = "${profile.HostName}")
+#foreach($alt in ${profile.HostNames} )
+#if(($alt != ${profile.HostName}) && ($alt != ${cname}))	
+#set ($aliasString = " ${aliasString} ${alt}.${profile.DomainName} ${alt}") 
+#end
+#end
+	
+	ServerName ${cname}
+	ServerAlias ${aliasString}
+	
+	RewriteEngine On
+
+	RewriteCond %{HTTPS} off
+	RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+
+	ErrorLog /u01/log/httpd/${HostName}_error_log
+	TransferLog /u01/log/httpd/${HostName}_access_log
+	LogLevel info
+</VirtualHost>
+#end
+
+#foreach($profile in $Profiles)
+<VirtualHost *:443>
+
+#set ($cname = "${profile.HostName}.${profile.DomainName}")
+#set ($aliasString = "${profile.HostName}")
+#foreach($alt in ${profile.HostNames} )
+#if(($alt != ${profile.HostName}) && ($alt != ${cname}))	
+#set ($aliasString = "${aliasString} ${alt}.${profile.DomainName} ${alt}") 
+#end
+#end
+	
+	ServerName ${cname}
+	ServerAlias ${aliasString}
+	
+	DocumentRoot "/u01/data/httpd/appl"
+	
+    Timeout ${HttpTimeout}	
+    KeepAlive On
+    MaxKeepAliveRequests 100
+    KeepAliveTimeout 15
+
+    ProxyIOBufferSize 61024
+    LimitRequestFieldsize 60000
+	
+	RequestHeader set X-Forwarded-Proto "https" 
+	
+
+	SSLEngine on
+    SSLCertificateFile /u01/app/httpd/conf/${Prefix}_${HostName}.${DomainName}.cer
+    SSLCertificateKeyFile /u01/app/httpd/conf/${Prefix}_${HostName}.${DomainName}.key
+
+    SSLProtocol all -SSLv2
+    SSLCipherSuite ALL:!ADH:!EXPORT:!SSLv2:RC4+RSA:+HIGH:+MEDIUM:+LOW
+    SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
+	
+	# ProxyPass Management Interface Port
+	RewriteEngine On
+	RewriteRule    "^/console(.*)"  "http://127.0.0.1:${profile.ConsolePortNumber}/console$1" [P,L]
+	ProxyPassReverse /console http://127.0.0.1:${profile.ConsolePortNumber}/console
+
+	RewriteRule    "^/management(.*)"  "http://127.0.0.1:${profile.ConsolePortNumber}/management$1" [P,L]
+	ProxyPassReverse /management http://127.0.0.1:${profile.ConsolePortNumber}/management
+
+
+	# -------------- Maintenance Page --------------------------------------------
+	# switch on  : if /u01/data/httpd/appl/${profile.Prefix}_maintenance.enable and /u01/data/httpd/appl/${profile.Prefix}_maintenance.html is present
+	# switch off : when /u01/data/httpd/appl/${profile.Prefix}_maintenance.enable is removed
+
+    # RewriteRule for ${profile.Prefix}_maintenance.html  will only be aktivated, if all RewriteCond below are true 
+	RewriteCond %{DOCUMENT_ROOT}/${profile.Prefix}_maintenance.html -f
+	RewriteCond %{DOCUMENT_ROOT}/${profile.Prefix}_maintenance.enable -f
+	RewriteCond %{SCRIPT_FILENAME} !${profile.Prefix}_maintenance.html
+	RewriteCond %{REQUEST_URI} !^/console
+	RewriteCond %{REQUEST_URI} !^/management
+	RewriteCond %{REQUEST_URI} !^/statusreport
+	RewriteCond %{REQUEST_URI} !^/sso
+	RewriteCond %{REQUEST_URI} !^/img/
+	RewriteRule ^.*$ /${profile.Prefix}_maintenance.html [R=503,L]
+	ErrorDocument 503 /${profile.Prefix}_maintenance.html
+
+	# exclude Maintenance and Management Interface ProxyPass, which is done in  -> ProxyPass Management Interface Port above
+	ProxyPass /${profile.Prefix}_maintenance.html !
+	ProxyPass /img/BJB-Logo.gif !
+	ProxyPass /console !
+	ProxyPass /management !
+	
+    # 	
+	ProxyPass / http://127.0.0.1:${profile.HttpPortNumber}/
+	ProxyPassReverse / http://127.0.0.1:${profile.HttpPortNumber}/
+	
+    #if($HttpDynatraceProxyConfig) 
+		${HttpDynatraceProxyConfig}
+	#end
+	
+	RequestHeader unset Origin
+    ProxyPreserveHost On
+    #ProxyErrorOverride On
+    #ErrorDocument 503 /error.html
+
+    LogFormat "%{%Y-%m-%d %X}t,000 IP=%{X-Forwarded-For}i REQ-TRX=%{X-trID}i USER=%{Remote-User}i HTTP-METHOD=%m REQUEST-URI=%U%q STATUS=%s DURATION-MICROS=%D SIZE=%B REFERER=%{Referer}i USER-AGENT=%{User-Agent}i BYTES-RECEIVED=%I BYTES-SENT=%O" juliusbaer
+
+    CustomLog /u01/log/httpd/${HostName}_${profile.Prefix}_ssl_request_log juliusbaer
+    
+    ErrorLog /u01/log/httpd/${HostName}_${profile.Prefix}_https_error_log
+    LogLevel info
+
+</VirtualHost>
+#end

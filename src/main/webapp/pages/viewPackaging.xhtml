@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>NEXUS browse for Profile
+		#{profileController.profile.name}</title>
+
+
+</h:head>
+
+<h:body>
+
+	<f:facet name="last">
+		<h:outputStylesheet library="default" name="css/default.css" />
+	</f:facet>
+
+
+
+	<h:form>
+
+		<p:growl id="growl" sticky="true" showDetail="true" />
+		<p:messages id="messages" />
+		<h:panelGroup layout="block" id="table-wrapper">
+
+			<p:panel id="updatePanel" autoUpdate="false">
+
+
+				<p:dataTable id="ticketsTable" var="tck"
+					value="#{profileController.jiraTickets}" paginator="true" rows="6"
+					paginatorPosition="bottom">
+
+					<f:facet name="header">
+            Available JIRA Delivery Tickets
+        </f:facet>
+
+					<p:column headerText="Key">
+            #{tck.id}
+        </p:column>
+
+					<p:column headerText="Summary">
+            #{tck.summary}
+        </p:column>
+
+					<p:column headerText="Status">
+            #{tck.status}
+					</p:column>
+
+					<p:column headerText="Pin" style="width:4%">
+						<p:commandButton id="selectButton" icon="ui-icon-pin-s"
+							update="@form" title="View">
+							<f:setPropertyActionListener value="#{tck}"
+								target="#{profileController.selectedTicket}" />
+						</p:commandButton>
+					</p:column>
+
+
+				</p:dataTable>
+				<h:panelGrid id="rpmGrid2" columns="2" cellpadding="4">
+					<p:commandButton value="Generate RPM" update="messages"
+						oncomplete="PF('rpmWidget').hide();"
+						actionListener="#{profileController.generateRPM}" />
+
+					<p:commandButton value="Quit" update="messages" immediate="true"
+						actionListener="#{profileController.closePackagingView}" />
+
+				</h:panelGrid>
+
+
+			</p:panel>
+		</h:panelGroup>
+
+	</h:form>
+</h:body>
+
+</html>

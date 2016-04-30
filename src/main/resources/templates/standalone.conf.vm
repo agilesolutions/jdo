@@ -1,0 +1,120 @@
+#set ($RemoteDebugPort = 8787 + $PortOffset) 
+## -*- shell-script -*- ######################################################
+##                                                                          ##
+##  JBoss Bootstrap Script Configuration                                    ##
+##                                                                          ##
+##############################################################################
+
+#
+# This file is optional; it may be removed if not needed.
+#
+
+#
+# Specify the maximum file descriptor limit, use "max" or "maximum" to use
+# the default, as queried by the system.
+#
+# Defaults to "maximum"
+#
+# MAX_FD="maximum"
+
+#
+# Specify the profiler configuration file to load.
+#
+# Default is to not load profiler configuration file.
+#
+# PROFILER=""
+
+#
+# Specify the location of the Java home directory.  If set then $JAVA will
+# be defined to $JAVA_HOME/bin/java, else $JAVA will be "java".
+#
+# JAVA_HOME="/opt/java/jdk"
+
+#
+# Specify the exact Java VM executable to use.
+#
+#JAVA=""
+
+if [ "x$JBOSS_MODULES_SYSTEM_PKGS" = "x" ]; then
+   JBOSS_MODULES_SYSTEM_PKGS="org.jboss.byteman"
+fi
+
+if [ "x$JBOSS_MODULEPATH" = "x" ]; then
+   export JBOSS_MODULEPATH="/u01/app/admrun/${Prefix}/modules:$JBOSS_HOME/modules"
+fi
+
+# Uncomment the following line to prevent manipulation of JVM options
+# by shell scripts.
+#
+# PRESERVE_JAVA_OPTS=true
+#
+# Specify options to pass to the Java VM.
+#
+if [ "x$JAVA_OPTS" = "x" ]; then
+   JAVA_OPTS="-D${Name} -Djava.net.preferIPv4Stack=true -Dorg.jboss.resolver.warning=true"
+   
+#if( $Dynatrace == "Y" )
+	if [ ! -f /u01/app/admrun/${Prefix}/configuration/CLIRUN ];  then
+		JAVA_OPTS="$JAVA_OPTS $DynatraceArgument"
+	fi
+#end   
+
+#if( $Dynatrace != "Y" && $Environment == "DEV" )
+    JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=$RemoteDebugPort,server=y,suspend=n"
+#end   
+   
+#foreach( $arg in $Arguments)
+#if (!$arg.Value)
+   JAVA_OPTS="$JAVA_OPTS $arg.Name"
+#else
+   JAVA_OPTS="$JAVA_OPTS $arg.Name=$arg.Value"
+#end
+#end
+
+   JAVA_OPTS="$JAVA_OPTS -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000"
+   JAVA_OPTS="$JAVA_OPTS -Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS -Djava.awt.headless=true"
+   JAVA_OPTS="$JAVA_OPTS -verbose:gc -Xloggc:/u01/log/admrun/${Prefix}/infra/gcout.log"
+   JAVA_OPTS="$JAVA_OPTS -Djboss.server.default.config=standalone.xml"
+   JAVA_OPTS="$JAVA_OPTS -Djboss.server.base.dir=/u01/app/admrun/${Prefix} -Djboss.server.log.dir=/u01/log/admrun/${Prefix}/infra/"
+   JAVA_OPTS="$JAVA_OPTS -Djboss.server.data.dir=/u01/data/admrun/${Prefix}"
+   
+else
+   echo "JAVA_OPTS already set in environment; overriding default settings with values: $JAVA_OPTS"
+fi
+
+if [ -f /u01/app/admrun/${Prefix}/configuration/keystore.jks ]; then
+   JAVA_OPTS="$JAVA_OPTS -Djavax.net.ssl.keyStore=/u01/app/admrun/${Prefix}/configuration/keystore.jks"
+   JAVA_OPTS="$JAVA_OPTS -Djavax.net.ssl.keyStorePassword=$Password"
+else
+   echo "WARN: /u01/app/admrun/${Prefix}/configuration/keystore.jks not found, or missing permissions to read it"
+fi
+
+#Setup for MQ7 ResourceAdaptor and MDB's
+# JAVA_OPTS="$JAVA_OPTS -Djavax.net.ssl.keyStore=/u01/app/admrun/${Prefix}/configuration/keystore.jks -Djavax.net.ssl.trustStore=/u01/app/admrun/${Prefix}/configuration/keystore.jks"
+
+#if ( $QueueFactories.size() > 0 )
+#foreach($qf in $QueueFactories)
+#if( $velocityCount == 1 )
+JAVA_OPTS="$JAVA_OPTS -Dcom.ibm.mq.jms.ForceUserID=true -Dwmq.user=$qf.UserName"
+JAVA_OPTS="$JAVA_OPTS -Dwmq.host=$qf.HostName -Dwmq.port=$qf.Port -Dwmq.channel=$qf.Channel -Dwmq.queueManager=$qf.QueueManager -Dwmq.sslCipherSuite=$qf.SslCipherSuite"
+#end
+#foreach( $ao in $qf.AdminObjects)
+#if( $ao.Mdb )
+JAVA_OPTS="$JAVA_OPTS -D$ao.ConfigProperty=$ao.ConfigProperty"
+#end
+#end
+#end
+#end
+
+# Sample JPDA settings for remote socket debugging
+# JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
+
+# Sample JPDA settings for shared memory debugging
+#JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_shmem,server=y,suspend=n,address=jboss"
+
+# Uncomment to not use JBoss Modules lockless mode
+# JAVA_OPTS="$JAVA_OPTS -Djboss.modules.lockless=false"
+
+# Uncomment to gather JBoss Modules metrics
+# JAVA_OPTS="$JAVA_OPTS -Djboss.modules.metrics=true"
+
