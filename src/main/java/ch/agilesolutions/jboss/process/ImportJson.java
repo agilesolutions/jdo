@@ -100,7 +100,6 @@ public class ImportJson {
 			for (ch.agilesolutions.jboss.platform.jboss.XaDatasource ds : s.getDatasources().getXaDatasource()) {
 				Datasource datasource = new Datasource();
 				datasource.setName(ds.getPoolName());
-				datasource.setDescription(ds.getPoolName());
 				datasource.setDriver(ds.getDriver());
 				datasource.setJndiName(ds.getJndiName());
 				datasource.setUrl(ds.getXaDatasourceProperty().withName("URL").getContent());

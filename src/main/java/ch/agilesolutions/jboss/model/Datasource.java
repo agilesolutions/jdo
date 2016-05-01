@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.annotations.Expose;
+
 import ch.agilesolutions.jboss.annotations.Attribute;
-import ch.agilesolutions.jboss.annotations.Component;
 import ch.agilesolutions.jboss.annotations.WidgetType;
 
 public class Datasource {
@@ -13,8 +13,6 @@ public class Datasource {
 	private Integer id;
 	@Expose(serialize = true)
 	private String name;
-	@Expose(serialize = true)
-	private String description;
 	@Expose(serialize = true)
 	private String datasourceClass;
 	@Expose(serialize = true)
@@ -35,7 +33,7 @@ public class Datasource {
 	@Expose(serialize = true)
 	private List<DatasourceProperty> properties = new ArrayList<>();
 
-	@Attribute(order = 5, length = 50, required=true, type = WidgetType.INPUT)	
+	@Attribute(order = 4, length = 50, required=true, type = WidgetType.INPUT)	
 	public String getDatasourceClass() {
 		return datasourceClass;
 	}
@@ -44,7 +42,7 @@ public class Datasource {
 		this.datasourceClass = datasourceClass;
 	}
 
-	@Attribute(order = 7, length = 25, required=true, type = WidgetType.PASSWORD)
+	@Attribute(order = 6, length = 25, required=true, type = WidgetType.PASSWORD)
 	public String getPassword() {
 		return password;
 	}
@@ -53,7 +51,7 @@ public class Datasource {
 		this.password = password;
 	}
 
-	@Attribute(order = 8, length = 25, required=true, type = WidgetType.LIST)
+	@Attribute(order = 7, length = 25, required=true, type = WidgetType.LIST)
 	public String getDriver() {
 		return driver;
 	}
@@ -62,7 +60,7 @@ public class Datasource {
 		this.driver = driver;
 	}
 
-	@Attribute(order = 1, length = 30, required=true, type = WidgetType.INPUT)
+	@Attribute(order = 1, length = 50, required=true, type = WidgetType.INPUT)
 	public String getName() {
 		return name;
 	}
@@ -87,7 +85,7 @@ public class Datasource {
 		this.id = id;
 	}
 
-	@Attribute(order = 6, length = 25, required=true, type = WidgetType.INPUT)
+	@Attribute(order = 5, length = 25, required=true, type = WidgetType.INPUT)
 	public String getUserName() {
 		return userName;
 	}
@@ -104,7 +102,7 @@ public class Datasource {
 		this.version = version;
 	}
 
-	@Attribute(order = 4, length = 100, required=true, type = WidgetType.INPUT)
+	@Attribute(order = 3, length = 100, required=true, type = WidgetType.INPUT)
 	public String getUrl() {
 		return url;
 	}
@@ -123,7 +121,7 @@ public class Datasource {
 		this.properties = properties;
 	}
 
-	@Attribute(order = 3, length = 40, required=true, type = WidgetType.INPUT)
+	@Attribute(order = 2, length = 40, required=true, type = WidgetType.INPUT)
 	public String getJndiName() {
 		return jndiName;
 	}
@@ -132,13 +130,8 @@ public class Datasource {
 		this.jndiName = jndiName;
 	}
 
-	@Attribute(order = 2, length = 80, required=true, type = WidgetType.INPUT)
 	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
+		return String.format("%s at %s", name,url);
 	}
 
 	@Override

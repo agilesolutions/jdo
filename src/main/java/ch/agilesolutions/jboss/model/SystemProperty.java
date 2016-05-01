@@ -11,8 +11,6 @@ public class SystemProperty {
 	@Expose(serialize = true)
 	private String name;
 	@Expose(serialize = true)
-	private String description;
-	@Expose(serialize = true)
 	private Integer version;
 	@Expose(serialize = true)
 	private String value;
@@ -38,10 +36,7 @@ public class SystemProperty {
 	}
 
 	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
+		return String.format("name = %s and value = %s", name,value);
 	}
 	@Attribute(order = 2, length = 60, required=true, type = WidgetType.INPUT)	
 	public String getValue() {

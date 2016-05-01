@@ -239,8 +239,6 @@ public class ImportXML {
 
 		datasource.setName(getAttribute(event, "pool-name"));
 
-		datasource.setName(String.format("%s - %s", getAttribute(event, "pool-name"), getAttribute(event, "jndi-name")));
-
 		while (rdr.hasNext()) {
 			XMLEvent e = rdr.nextEvent();
 
@@ -308,8 +306,6 @@ public class ImportXML {
 		datasource.setJndiName(getAttribute(event, "jndi-name"));
 
 		datasource.setName(getAttribute(event, "pool-name"));
-
-		datasource.setName(String.format("%s - %s", getAttribute(event, "pool-name"), getAttribute(event, "jndi-name")));
 
 		while (rdr.hasNext()) {
 			XMLEvent e = rdr.nextEvent();
