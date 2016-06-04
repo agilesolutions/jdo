@@ -11,6 +11,7 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -49,44 +50,72 @@ public class Resources {
 		System.out.println("START GIT DATABASE ****************************************************");
 
 		File theDir = new File(System.getProperty("jboss.server.data.dir") + "/database");
-
+		
 		// if the directory does not exist, create it
-		if (!theDir.exists()) {
-
-			System.out.println("CREATE DIRECTORY ****************************************************");
-			
-			theDir.mkdir();
+		if (theDir.exists()) {
 
 			try {
-				System.out.println("CLONE GIT ****************************************************");
-				git = Git.cloneRepository()
-						.setURI(gitUrl)
-						.setDirectory(theDir).call();
-				System.out.println("CLONE DONE ****************************************************");
-
-			} catch (Exception e) {
-				System.out.println("CLONE FAILED ****************************************************");
-				e.printStackTrace();
-			}
-
-		} else {
-
-			FileRepositoryBuilder builder = new FileRepositoryBuilder();
-			try {
-				
-				System.out.println("CONNECT GIT ****************************************************");
-
-				Repository repository = builder.setGitDir(new File(theDir + File.separator + ".git")).readEnvironment()
-						.findGitDir().build();
-
-				git = new Git(repository);
-				System.out.println("CONNECT DONE ****************************************************");
-
+				FileUtils.deleteDirectory(theDir);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
+			theDir.mkdir();
+		} else {
+			theDir.mkdir();
 		}
+		
+		try {
+			System.out.println("CLONE GIT ****************************************************");
+			git = Git.cloneRepository()
+					.setURI(gitUrl)
+					.setDirectory(theDir).call();
+			System.out.println("CLONE DONE ****************************************************");
+
+		} catch (Exception e) {
+			System.out.println("CLONE FAILED ****************************************************");
+			e.printStackTrace();
+		}
+		
+//
+//		// if the directory does not exist, create it
+//		if (!theDir.exists()) {
+//
+//			System.out.println("CREATE DIRECTORY ****************************************************");
+//			
+//			theDir.mkdir();
+//
+//			try {
+//				System.out.println("CLONE GIT ****************************************************");
+//				git = Git.cloneRepository()
+//						.setURI(gitUrl)
+//						.setDirectory(theDir).call();
+//				System.out.println("CLONE DONE ****************************************************");
+//
+//			} catch (Exception e) {
+//				System.out.println("CLONE FAILED ****************************************************");
+//				e.printStackTrace();
+//			}
+//
+//		} else {
+//
+//			FileRepositoryBuilder builder = new FileRepositoryBuilder();
+//			try {
+//				
+//				System.out.println("CONNECT GIT ****************************************************");
+//
+//				Repository repository = builder.setGitDir(new File(theDir + File.separator + ".git")).readEnvironment()
+//						.findGitDir().build();
+//
+//				git = new Git(repository);
+//				System.out.println("CONNECT DONE ****************************************************");
+//
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
 
 		return git;
 
