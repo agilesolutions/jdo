@@ -110,7 +110,6 @@ public class NexusDao {
 
 	public List<Artefact> listPackages(Deployment deployment) {
 
-
 		try {
 
 			HttpClient httpclient = new DefaultHttpClient();
@@ -218,6 +217,68 @@ public class NexusDao {
 
 	/**
 	 * 
+	 * 
+	 * @param groupId
+	 *            Maven group identification.
+	 * @param artefact
+	 *            Maven artefact id.
+	 * @param version
+	 *            Maven version.
+	 * @param type
+	 *            deployment type TGZ.
+	 * @return get artefact as steam.
+	 * @throws FileNotFoundException
+	 * @throws Exception
+	 */
+	public InputStream getDeployment(String groupId, String artefact, String version, String type) {
+		try {
+
+			HttpClient httpclient = new DefaultHttpClient();
+
+			// compose URI for accessing Nexus
+			StringBuilder builder = new StringBuilder();
+			builder.append(nexusUrl);
+			builder.append("/service/local/artifact/maven/redirect?r=deployments");
+			builder.append("&g=");
+			builder.append(groupId);
+			builder.append("&a=");
+			builder.append(artefact);
+			builder.append("&v=");
+			builder.append(version);
+			builder.append("&p=");
+			builder.append(type);
+
+			HttpGet httpget = new HttpGet(builder.toString());
+			HttpResponse response = httpclient.execute(httpget);
+
+			if (response.getStatusLine().getStatusCode() == 404) {
+
+				// Release connection when nothing is found.
+
+				if (response.getEntity() != null) {
+					InputStream is = response.getEntity().getContent();
+					is.close();
+
+				}
+
+				throw new IllegalStateException(
+						new FileNotFoundException("Deployment artefact" + artefact + " not located!"));
+			}
+
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				return entity.getContent();
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new IllegalStateException(e);
+		}
+		return null;
+	}
+
+	/**
+	 * 
 	 * http://www.baeldung.com/httpclient-multipart-upload
 	 * 
 	 * @param filePath
@@ -240,9 +301,11 @@ public class NexusDao {
 			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 			builder.addBinaryBody("upstream", inputStream, ContentType.create("application/zip"), filePath);
 			builder.addPart("r", new StringBody("releases", ContentType.MULTIPART_FORM_DATA));
-			builder.addPart("g", new StringBody(String.format("com.%s", profile.getDomain()), ContentType.MULTIPART_FORM_DATA));
+			builder.addPart("g",
+					new StringBody(String.format("com.%s", profile.getDomain()), ContentType.MULTIPART_FORM_DATA));
 			builder.addPart("a", new StringBody(profile.getName(), ContentType.MULTIPART_FORM_DATA));
-			builder.addPart("v", new StringBody(String.format("%s.0.0", profile.getVersion()), ContentType.MULTIPART_FORM_DATA));
+			builder.addPart("v",
+					new StringBody(String.format("%s.0.0", profile.getVersion()), ContentType.MULTIPART_FORM_DATA));
 			builder.addPart("p", new StringBody("tar", ContentType.MULTIPART_FORM_DATA));
 			builder.addPart("e", new StringBody("tar", ContentType.MULTIPART_FORM_DATA));
 			HttpEntity entity = builder.build();

@@ -56,7 +56,7 @@ public class Packager {
 	private static final String STAGING_DIR = System.getProperty("jboss.server.data.dir") + "/staging";
 
 	public String generate(Profile profile) {
-		
+
 		templateDao.pullTemplates();
 
 		renderFiles(profile);
@@ -66,13 +66,13 @@ public class Packager {
 		// String rpmFile = rpmArchiver.build(profile);
 
 		// number up and persist version number
-		profile.setVersion((profile.getVersion()==null?1:profile.getVersion() + 1));
+		profile.setVersion((profile.getVersion() == null ? 1 : profile.getVersion() + 1));
 		profileDao.save(profile,
-		String.format("Version number increased on profile %s during packaging", profile.getName()));
+				String.format("Version number increased on profile %s during packaging", profile.getName()));
 
 		String tarFile = tarArchiver.build(profile);
 
-		sshService.copyArtefact("me.rodakr.com", tarFile, "/var/tmp");
+		// sshService.copyArtefact("me.rodakr.com", tarFile, "/var/tmp");
 
 		return "package completed successfully";
 
@@ -152,6 +152,17 @@ public class Packager {
 	}
 
 	private void downloadArtefacts(Profile profile) {
+
+		String profileStagingDirectory = STAGING_DIR + File.separator + profile.getName();
+
+		// build staging folder structure
+		File theDir = new File(profileStagingDirectory);
+
+		// if staging directory exists delete content
+		if (!theDir.exists()) {
+
+			theDir.mkdir();
+		}
 
 		profile.getDeployments().stream().forEach(d -> {
 			InputStream inputStream = nexusDao.getArtefact(d.getGroupIdentification(), d.getArtifact(), d.getVersion(),

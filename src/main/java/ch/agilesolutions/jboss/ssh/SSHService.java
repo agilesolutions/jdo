@@ -57,7 +57,7 @@ public class SSHService {
 		}
 	}
 
-	public String execCommand(String host, String command) throws Exception {
+	public String execCommand(String host, String command)  {
 		Session session = createSSHConnection(host);
 		ChannelExec channel = null;
 		byte[] tmp = new byte[1024];
@@ -110,12 +110,10 @@ public class SSHService {
 
 			return out.toString();
 
-		} catch (JSchException e) {
+		} catch (Exception e) {
 			logger.error("SSHService: error during sftp copy ", e);
-			throw new Exception(e);
-		} catch (IOException ee) {
-			logger.error("SSHService: error during sftp copy ", ee);
-			throw new Exception(ee);
+			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 	}
 	/**
@@ -127,7 +125,7 @@ public class SSHService {
 		
 		Session session = null;
 		
-		String privateKey = facesContext.getCurrentInstance().getExternalContext().getRealPath("/openssh");
+		String privateKey = facesContext.getCurrentInstance().getExternalContext().getRealPath("/rob");
 
 		try {
 			JSch jsch = new JSch();

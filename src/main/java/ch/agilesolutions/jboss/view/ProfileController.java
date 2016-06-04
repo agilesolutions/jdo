@@ -1,6 +1,5 @@
 package ch.agilesolutions.jboss.view;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,7 +30,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.WordUtils;
 import org.primefaces.component.autocomplete.AutoComplete;
 import org.primefaces.component.outputlabel.OutputLabel;
@@ -57,6 +55,7 @@ import ch.agilesolutions.jboss.model.JiraProject;
 import ch.agilesolutions.jboss.model.JiraTicket;
 import ch.agilesolutions.jboss.model.Profile;
 import ch.agilesolutions.jboss.model.Tree;
+import ch.agilesolutions.jboss.process.Deployer;
 import ch.agilesolutions.jboss.process.ImportJson;
 import ch.agilesolutions.jboss.process.ImportXML;
 import ch.agilesolutions.jboss.process.Packager;
@@ -105,6 +104,9 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	@Inject
 	private Packager packager;
+	
+	@Inject
+	private Deployer deployer;
 
 	private List<Profile> profiles;
 
@@ -1084,28 +1086,34 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	public void deployPackage() {
 		
-		InputStream stream = FacesContext.getCurrentInstance().getExternalContext().getResourceAsStream("/dummyresponse.txt");
+		deployer.deploy(host, profile,  selectedPackage);
 		
-		
-		try {
-			
-			Thread.sleep(5000);
-			deploymentStatus = IOUtils.toString(stream);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		
-
-		submitMessage(FacesMessage.SEVERITY_INFO, String.format("Packaged %s submitted for deployment", selectedPackage.getArtifactId() ), true);
-
+//		InputStream stream = FacesContext.getCurrentInstance().getExternalContext().getResourceAsStream("/dummyresponse.txt");
+//		
+//		
+//		try {
+//			
+//			Thread.sleep(5000);
+//			deploymentStatus = IOUtils.toString(stream);
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} 
+//		
+//
+//		submitMessage(FacesMessage.SEVERITY_INFO, String.format("Packaged %s submitted for deployment", selectedPackage.getArtifactId() ), true);
+//
 	}
 
+
 	public void schedulePackage() {
+		
+		deployer.schedule(host, profile, selectedPackage, submitDate);
 
 		submitMessage(FacesMessage.SEVERITY_INFO, String.format("Packaged %s scheduled for deployment", selectedPackage.getArtifactId() ), true);
 
 	}
+
 
 	public void addDeployment() {
 
