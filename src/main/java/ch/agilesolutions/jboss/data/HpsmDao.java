@@ -22,10 +22,11 @@ public class HpsmDao {
 	 */
 	public List<String> getHosts() {
 
-		List<String> hosts = Stream.of("hostA", "hostB", "hostD", "hostD", "hostE").collect(Collectors.toList());
-		
-		logger.info("List of server CI's retrieved from HP ITSM");
+		List<String> hosts = Stream
+		                .of("srv007489lx", "srv004770lx", "srv006875lx", "srv004386lx", "srv001787lx", "srv005367lx", "srv007829lx", "srv009376lx", "srv001375lx", "srv008365lx", "srv002855lx", "srv008564lx", "srv009975lx", "srv003864lx")
+		                .collect(Collectors.toList());
 
+		logger.info("List of server CI's retrieved from HP ITSM");
 
 		return hosts;
 

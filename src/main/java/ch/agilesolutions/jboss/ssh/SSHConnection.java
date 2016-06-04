@@ -27,13 +27,13 @@ public class SSHConnection {
 
 	public Session getSession() throws Exception {
 
-		String pubkeyfile = "/root/.ssh/id_dsa";
-		String host = "srp03396lx", user = "root";
+		String privateKeyfile = "/root/.ssh/id_dsa";
+		String host = "srp03396lx", user = "admrun";
 
 		try {
 			LOGGER.debug("connect...");
 
-			jsch.addIdentity(pubkeyfile);
+			jsch.addIdentity(privateKeyfile);
 			jsch.setKnownHosts("/root/.ssh/known_hosts");
 
 			session = jsch.getSession(user, host, 22);

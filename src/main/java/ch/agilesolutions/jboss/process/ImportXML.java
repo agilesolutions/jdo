@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import ch.agilesolutions.jboss.data.ProfileDao;
 import ch.agilesolutions.jboss.model.Datasource;
 import ch.agilesolutions.jboss.model.Driver;
+import ch.agilesolutions.jboss.model.Environment;
 import ch.agilesolutions.jboss.model.Profile;
 import ch.agilesolutions.jboss.model.SystemProperty;
 
@@ -46,6 +47,7 @@ public class ImportXML {
 		profile.setName(String.format("%s-%s", domainName, host));
 		profile.setDescription(String.format("%s-%s", domainName, host));
 		profile.setHostName(host);
+		profile.setEnvironment(Environment.SIT.name());
 
 		try {
 
@@ -79,7 +81,7 @@ public class ImportXML {
 					}
 				}
 
-				profileDao.save(profile);
+				profileDao.save(profile, String.format("New profile %s imported through standalone.xml", profile.getName()));
 
 			} catch (XMLStreamException ex) {
 				System.out.println(ex.getMessage());
@@ -187,7 +189,6 @@ public class ImportXML {
 	 */
 	private void processSystemProperties(Profile profile, XMLEventReader rdr, XMLEvent event, StringBuilder consoleOutput) throws Exception {
 
-		SystemProperty systemProperty = new SystemProperty();
 
 		while (rdr.hasNext()) {
 			XMLEvent e = rdr.nextEvent();
@@ -197,25 +198,26 @@ public class ImportXML {
 				if (hasStartTagName(e, "property")) {
 
 					if (getAttribute(e, "name") != null) {
+						SystemProperty systemProperty = new SystemProperty();
 
 						systemProperty.setName(getAttribute(e, "name"));
 
 						systemProperty.setValue(getAttribute(e, "value"));
+						// only persist if there is no existing property with same name
+						if (!profile.getSystemProperties().contains(systemProperty)) {
+							profile.getSystemProperties().add(systemProperty);
+							consoleOutput.append("Imported systemproperty : " + systemProperty.getName() + "\n");
+						}
 
 					}
 				}
 			}
 
 			if (e.isEndElement()) {
-				if (hasEndTagName(e, "property")) {
+				if (hasEndTagName(e, "system-properties")) {
 					break;
 				}
 			}
-		}
-		// only persist if there is no existing property with same name
-		if (!profile.getSystemProperties().contains(systemProperty)) {
-			consoleOutput.append("Imported systemproperty : " + systemProperty.getName() + "\n");
-			profile.getSystemProperties().add(systemProperty);
 		}
 
 	}

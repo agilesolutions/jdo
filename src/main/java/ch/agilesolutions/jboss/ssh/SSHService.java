@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ejb.Stateless;
+import javax.enterprise.inject.spi.InjectionPoint;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
@@ -19,12 +22,15 @@ public class SSHService {
 
 	@Inject
 	Logger logger;
+	
+	@Inject
+	FacesContext facesContext;
 
 	@Inject
 	SSHConnection connection;
 
-	public void copyArtefact(String fileName, InputStream is) throws Exception {
-		Session session = connection.getSession();
+	public void copyArtefact(String host, String sourceFileName, String targetFileName)  {
+		Session session = createSSHConnection(host);
 		ChannelSftp channel = null;
 
 		try {
@@ -34,7 +40,7 @@ public class SSHService {
 			channel.connect();
 			logger.debug("channel connected.");
 
-			channel.put(is, fileName);
+			channel.put(sourceFileName, targetFileName);
 
 			channel.quit();
 			channel.exit();
@@ -42,15 +48,17 @@ public class SSHService {
 
 		} catch (SftpException e) {
 			logger.error("SSHService: error during sftp copy ", e);
-			throw new Exception(e);
+			e.printStackTrace();
+			throw new IllegalStateException(e);
 		} catch (JSchException e) {
 			logger.error("SSHService: error during sftp copy ", e);
-			throw new Exception(e);
+			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 	}
 
-	public String execCommand(String command) throws Exception {
-		Session session = connection.getSession();
+	public String execCommand(String host, String command) throws Exception {
+		Session session = createSSHConnection(host);
 		ChannelExec channel = null;
 		byte[] tmp = new byte[1024];
 		StringBuilder out = new StringBuilder();
@@ -109,6 +117,35 @@ public class SSHService {
 			logger.error("SSHService: error during sftp copy ", ee);
 			throw new Exception(ee);
 		}
+	}
+	/**
+	 * http://stackoverflow.com/questions/4932005/can-we-use-jsch-for-ssh-key-based-communication
+	 * @param host
+	 * @return
+	 */
+	private Session createSSHConnection(String host) {
+		
+		Session session = null;
+		
+		String privateKey = facesContext.getCurrentInstance().getExternalContext().getRealPath("/openssh");
+
+		try {
+			JSch jsch = new JSch();
+
+			jsch.addIdentity(privateKey, "");
+
+
+			session = jsch.getSession("rob", host, 22);
+
+			session.setConfig("StrictHostKeyChecking", "no");
+			session.setTimeout(15000);
+
+			session.connect();
+		} catch (Exception e) {
+			throw new IllegalStateException("Error establising JIRA REST connection.", e);
+		}
+
+		return session;
 	}
 
 }

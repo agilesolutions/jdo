@@ -20,7 +20,7 @@
 		<param-value>Production</param-value>
 	</context-param>
 
-	<!--  filter>
+	<filter>
 		<filter-name>PrimeFaces FileUpload Filter</filter-name>
 		<filter-class>org.primefaces.webapp.filter.FileUploadFilter</filter-class>
 		<init-param>
@@ -36,7 +36,7 @@
 	<filter-mapping>
 		<filter-name>PrimeFaces FileUpload Filter</filter-name>
 		<servlet-name>Faces Servlet</servlet-name>
-	</filter-mapping-->
+	</filter-mapping>
 
 
 	<servlet>

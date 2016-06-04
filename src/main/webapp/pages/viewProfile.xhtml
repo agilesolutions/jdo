@@ -15,14 +15,17 @@
 			<p:dock position="bottom" id="dockMenu">
 				<p:menuitem value="Select" icon="/resources/images/search.png"
 					onclick="PF('editSelection').show();" />
-				<p:menuitem value="Import" icon="/resources/images/import.png"
+				<p:menuitem value="Import" icon="/resources/images/update.png"
+					update ="importFeedback"
 					onclick="PF('importDialog').show();" />
 				<p:menuitem value="CLI" icon="/resources/images/cli.png"
 					onclick="PF('generateDialog').show();" />
-				<p:menuitem value="NEXUS" icon="/resources/images/nexus.png"
-					actionListener="#{profileController.showNexus()}" />
 				<p:menuitem value="PACKAGE" icon="/resources/images/package.png"
 					actionListener="#{profileController.showPackaging()}" />
+				<p:menuitem value="DEPLOY" icon="/resources/images/deploy.png"
+					actionListener="#{profileController.showDeploy()}" />
+				<p:menuitem value="SCHEDULE" icon="/resources/images/schedule.png"
+					actionListener="#{profileController.showSchedule()}" />
 			</p:dock>
 
 			<p:contextMenu for="table-wrapper" id="menu">
@@ -164,13 +167,14 @@
 				</h:panelGrid>
 				<h:panelGrid columns="" cellpadding="4">
 
-					<p:inputTextarea rows="36" cols="200" maxlength="1000" id="importFeedback"
+					<p:inputTextarea rows="36" cols="200" maxlength="800" id="importFeedback"
 						counterTemplate="{0} characters remaining." autoResize="false"
 						value="#{profileController.feedback}" readonly="true" />
 
 				</h:panelGrid>
 				<p:commandButton value="Close"
 					oncomplete="PF('importDialog').hide();"
+					actionListener="#{profileController.closeImport()}" 
 					update="messages,:form:tree" />
 
 			</p:dialog>

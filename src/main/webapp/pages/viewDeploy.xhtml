@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+	<title>Select Deployment Artefact to be deployed</title>
+
+
+</h:head>
+
+<h:body>
+
+	<f:facet name="last">
+		<h:outputStylesheet library="default" name="css/default.css" />
+	</f:facet>
+
+
+
+	<h:form>
+
+		<p:contextMenu for="table-wrapper" id="menu">
+			<p:menuitem icon="ui-icon-arrowrefresh-1-w" value="Deploy"
+				onclick="PF('confirmation').show();" />
+		</p:contextMenu>
+
+
+		<h:panelGroup layout="block" id="table-wrapper">
+			<p:messages id="messages" />
+
+			<p:panel id="updatePanel" autoUpdate="false">
+				<h:panelGrid columns="2" columnClasses="label, value">
+
+					<h:outputText value="GroupIdentification" />
+					<h:inputText
+						value="#{profileController.deployment.groupIdentification}"
+						maxlength="60" size="60" />
+
+					<h:outputText value="Artifact" />
+					<h:inputText value="#{profileController.deployment.artifact}"
+						maxlength="40" size="40" />
+
+				</h:panelGrid>
+
+				<h:panelGrid columns="1">
+					<p:dataTable var="artifact" value="#{profileController.artefacts}"
+						rowKey="#{artifact.id}" paginator="true"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rows="12" selection="#{profileController.selectedPackage}"
+						selectionMode="single" id="artifactTable">
+
+						<p:ajax event="rowSelect" update="@form" />
+
+						<f:facet name="header">
+            List of Deployment Artefacts on Nexus
+        </f:facet>
+
+						<p:column headerText="Id">
+            #{artifact.id}
+        </p:column>
+
+						<p:column headerText="ArtifactId">
+            #{artifact.artifactId}
+        </p:column>
+
+						<p:column headerText="GroupId">
+            #{artifact.groupId}
+        </p:column>
+
+						<p:column headerText="version">
+            #{artifact.version}
+        </p:column>
+
+						<p:column headerText="packaging">
+            #{artifact.packaging}
+        </p:column>
+
+					</p:dataTable>
+				</h:panelGrid>
+
+				<p:commandButton value="Search" update="growl,updatePanel"
+					process="updatePanel"
+					actionListener="#{profileController.searchPackage()}" />
+
+				<p:commandButton value="Close" update="growl" process="updatePanel"
+					immediate="true"
+					actionListener="#{profileController.closeDeployView}" />
+			</p:panel>
+		</h:panelGroup>
+
+		<p:confirmDialog id="confirmDialog"
+			message="Please confirm your deployment after selecting a valid host from CMDB?"
+			header="Confirmating deployment" severity="alert"
+			widgetVar="confirmation">
+
+			<h:panelGrid columns="2" columnClasses="label, value">
+
+				<h:outputText value="Host" />
+
+				<p:autoComplete value="#{profileController.host}"
+					completeMethod="#{profileController.completeHostName}"
+					update="specifyImport" style="font-size: 9px;">
+					<p:ajax event="change" update="messages"
+						listener="#{profileController.selectHost}" />
+					<p:ajax event="itemSelect" update="messages"
+						listener="#{profileController.selectHost}" />
+				</p:autoComplete>
+
+			</h:panelGrid>
+
+			<h:panelGrid columns="1">
+				<p:inputTextarea rows="36" cols="200" maxlength="800"
+					id="deploymentFeedback" counterTemplate="{0} characters remaining."
+					autoResize="false" value="#{profileController.deploymentStatus}"
+					readonly="true" />
+			</h:panelGrid>
+
+			<p:commandButton value="Yes"
+				update="messages,deploymentFeedback,growl"
+				actionListener="#{profileController.deployPackage()}" />
+			<p:commandButton value="Close" onclick="PF('confirmation').hide();"
+				type="button" />
+
+			<p:growl id="growl" sticky="true" showDetail="true" />
+
+
+		</p:confirmDialog>
+
+
+	</h:form>
+	<p:ajaxStatus
+		style="width:64px;height:64px;position:fixed;right:5px;bottom:60px">
+		<f:facet name="start">
+			<p:graphicImage value="/resources/images/loading.gif" />
+		</f:facet>
+
+		<f:facet name="complete">
+			<h:outputText value="" />
+		</f:facet>
+	</p:ajaxStatus>
+
+</h:body>
+
+</html>

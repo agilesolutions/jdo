@@ -37,7 +37,7 @@ public class TARArchiver {
 		String prefix = profile.getPrefix();
 		
 		String fileName = String.format("%s/%s.tgz",
-                        stagingDirectory, profile.getName(), profile.getBuildNumber());
+                        stagingDirectory, profile.getName());
 
 		try {
 			final TarArchiveOutputStream out = new TarArchiveOutputStream(
@@ -58,17 +58,17 @@ public class TARArchiver {
 				}
 			}));
 			// life-cycle listeners go here
-			File toFile = new File(tarPath + "/preInstall.sh");
-			FileUtils.copyFile(new File(stagingDirectory + "/preInstall.sh"), toFile);
-			addFile(prefix, "ext", toFile, out);
-
-			toFile = new File(tarPath + "/postInstall.sh");
-			FileUtils.copyFile(new File(stagingDirectory + "/postInstall.sh"), toFile);
-			addFile(prefix, "ext", toFile, out);
-
-			toFile = new File(tarPath + "/preInstall.sh");
-			FileUtils.copyFile(new File(stagingDirectory + "/preInstall.sh"), toFile);
-			addFile(prefix, "ext", toFile, out);
+//			File toFile = new File(tarPath + "/preInstall.sh");
+//			FileUtils.copyFile(new File(stagingDirectory + "/preInstall.sh"), toFile);
+//			addFile(prefix, "ext", toFile, out);
+//
+//			toFile = new File(tarPath + "/postInstall.sh");
+//			FileUtils.copyFile(new File(stagingDirectory + "/postInstall.sh"), toFile);
+//			addFile(prefix, "ext", toFile, out);
+//
+//			toFile = new File(tarPath + "/preInstall.sh");
+//			FileUtils.copyFile(new File(stagingDirectory + "/preInstall.sh"), toFile);
+//			addFile(prefix, "ext", toFile, out);
 
 		} catch (Exception e) {
 			logger.error("Error generating RPM package ", e);

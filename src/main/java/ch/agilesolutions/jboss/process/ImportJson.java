@@ -137,7 +137,7 @@ public class ImportJson {
 		});
 
 
-		profileDao.save(profile);
+		profileDao.save(profile, String.format("New profile %s imported through standalone.xml", profile.getName()));
 
 	}
 
@@ -169,7 +169,7 @@ public class ImportJson {
 			handler.getLoggers().add(logger);
 			profile.getHandlers().add(handler);
 
-			profileDao.save(profile);
+			profileDao.save(profile, String.format("New profile %s imported through Weblogic config descriptor", profile.getName()));
 
 		}
 
@@ -225,7 +225,7 @@ public class ImportJson {
 
 		profile.getDatasources().add(ds);
 
-		profileDao.save(profile);
+		profileDao.save(profile, String.format("Weblogic datasource %s imported on profile %s", ds.getName(), profile.getName()));
 
 	}
 
@@ -240,7 +240,7 @@ public class ImportJson {
 
 		profile.getQueueFactories().add(qf);
 
-		profileDao.save(profile);
+		profileDao.save(profile, String.format("Queuefactor %s imported on profile %s", qf.getName(), profile.getName()));
 
 	}
 

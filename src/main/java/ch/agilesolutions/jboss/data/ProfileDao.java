@@ -2,6 +2,9 @@ package ch.agilesolutions.jboss.data;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -19,6 +22,7 @@ import org.slf4j.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import ch.agilesolutions.jboss.cdi.SystemProperty;
 import ch.agilesolutions.jboss.model.Profile;
 
@@ -45,17 +49,25 @@ public class ProfileDao {
 	@SystemProperty("git.password")
 	String gitPassword;
 
-	public Profile save(Profile profile) {
+	public Profile save(Profile profile, String comment) {
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
 
 		Gson gson = gsonBuilder.excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
 
-		String filename = PROFILE_DIR + File.separator + profile.getName() + ".json";
+		String filename = PROFILE_DIR + File.separator + profile.getDomain() + File.separator + profile.getName() + ".json";
 
 		try {
 
 			String jsonString = gson.toJson((Profile) profile);
+
+			File theDir = new File(PROFILE_DIR + File.separator + profile.getDomain());
+
+			// if the directory does not exist, create it
+			if (!theDir.exists()) {
+
+				theDir.mkdir();
+			}
 
 			// write converted json data to a file.
 			FileWriter writer = new FileWriter(filename);
@@ -64,8 +76,7 @@ public class ProfileDao {
 
 			git.add().addFilepattern(".").call();
 
-			git.commit().setCommitter(gitUser, "robert.rong@agile-solutions.com")
-					.setMessage(String.format("Changed configuration for profile %s", profile.getName())).call();
+			git.commit().setCommitter(gitUser, "robert.rong@agile-solutions.com").setMessage(comment).call();
 
 			git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUser, gitPassword)).call();
 
@@ -81,18 +92,21 @@ public class ProfileDao {
 	public Profile delete(Profile profile) {
 
 		try {
-			File file = new File(PROFILE_DIR + File.separator + profile.getName() + ".json");
+			File file = new File(PROFILE_DIR + File.separator + profile.getDomain() + File.separator + profile.getName() + ".json");
 
-			if (!file.delete()) {
+			RandomAccessFile raf = new RandomAccessFile(file, "rw");
+			raf.close();
+
+			if (file.delete()) {
+				git.add().addFilepattern(".").call();
+
+				git.commit().setCommitter(gitUser, "jenkins@juliusbaer.com").setMessage(String.format("Profile %s deleted!", profile.getName())).call();
+
+				git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUser, gitPassword)).call();
+			} else {
 				throw new IllegalStateException("Delete operation is failed.");
+
 			}
-
-			git.add().addFilepattern(".").call();
-
-			git.commit().setCommitter(gitUser, "jenkins@juliusbaer.com")
-					.setMessage(String.format("Profile %s deleted!", profile.getName())).call();
-
-			git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUser, gitPassword)).call();
 
 		} catch (Exception e) {
 			logger.error("Error deleting profile ", e);
@@ -122,12 +136,9 @@ public class ProfileDao {
 
 		List<Profile> profiles = new ArrayList<>();
 
-		Arrays.stream(new File(PROFILE_DIR).listFiles()).forEach(((file) -> {
-			if (!file.isDirectory()) {
-
-				Path path;
+		try {
+			Files.walk(Paths.get(PROFILE_DIR)).filter(Files::isRegularFile).forEach(((path) -> {
 				try {
-					path = Paths.get(file.getCanonicalPath());
 
 					String stringFromFile = java.nio.file.Files.lines(path).collect(Collectors.joining());
 
@@ -135,11 +146,14 @@ public class ProfileDao {
 
 					profiles.add(importProfile);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.error("Error reading profile files ", e);
+					throw new IllegalStateException(e);
 				}
-			}
-		}));
+			}));
+		} catch (IOException e) {
+			logger.error("Error reading profile files ", e);
+			throw new IllegalStateException(e);
+		}
 
 		return profiles;
 
@@ -163,12 +177,9 @@ public class ProfileDao {
 
 		List<Profile> profiles = new ArrayList<>();
 
-		Arrays.stream(new File(PROFILE_DIR).listFiles()).forEach(((file) -> {
-			if (!file.isDirectory()) {
-
-				Path path;
+		try {
+			Files.walk(Paths.get(PROFILE_DIR)).filter(Files::isRegularFile).forEach(((path) -> {
 				try {
-					path = Paths.get(file.getCanonicalPath());
 
 					String stringFromFile = java.nio.file.Files.lines(path).collect(Collectors.joining());
 
@@ -178,11 +189,14 @@ public class ProfileDao {
 						profiles.add(importProfile);
 					}
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.error("Error reading profile files ", e);
+					throw new IllegalStateException(e);
 				}
-			}
-		}));
+			}));
+		} catch (IOException e) {
+			logger.error("Error reading profile files ", e);
+			throw new IllegalStateException(e);
+		}
 
 		return profiles;
 

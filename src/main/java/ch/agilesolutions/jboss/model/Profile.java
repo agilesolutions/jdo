@@ -29,9 +29,9 @@ public class Profile {
 	@Expose(serialize = true)
 	private String prefix;
 	@Expose(serialize = true)
-	private String jbossPath;
+	private String jboss;
 	@Expose(serialize = true)
-	private Boolean dynatrace;
+	private String jdk;
 	@Expose(serialize = true)
 	private String description;
 	@Expose(serialize = true)
@@ -128,20 +128,24 @@ public class Profile {
 		this.prefix = prefix;
 	}
 
-	public String getJbossPath() {
-		return jbossPath;
+	
+	
+	@Attribute(order = 8, length = 60, required=true, type = WidgetType.LIST)
+	public String getJboss() {
+		return jboss;
 	}
 
-	public void setJbossPath(String jbossPath) {
-		this.jbossPath = jbossPath;
+	public void setJboss(String jboss) {
+		this.jboss = jboss;
 	}
 
-	public Boolean getDynatrace() {
-		return dynatrace;
+	@Attribute(order = 7, length = 60, required=true, type = WidgetType.LIST)
+	public String getJdk() {
+		return jdk;
 	}
 
-	public void setDynatrace(Boolean dynatrace) {
-		this.dynatrace = dynatrace;
+	public void setJdk(String jdk) {
+		this.jdk = jdk;
 	}
 
 	@Attribute(order = 2, length = 90, required=true, type = WidgetType.INPUT)

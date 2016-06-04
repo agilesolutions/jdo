@@ -39,6 +39,8 @@ import org.slf4j.Logger;
 
 import ch.agilesolutions.jboss.cdi.SystemProperty;
 import ch.agilesolutions.jboss.model.Artefact;
+import ch.agilesolutions.jboss.model.Deployment;
+import ch.agilesolutions.jboss.model.Profile;
 import ch.agilesolutions.jboss.model.SearchResults;
 import ch.agilesolutions.jboss.util.Authenticator;
 
@@ -52,13 +54,13 @@ public class NexusDao {
 	@SystemProperty("nexus.url")
 	String nexusUrl;
 
-	 @Inject
-	 @SystemProperty("nexus.user")
-	 String nexusUser;
-	
-	 @Inject
-	 @SystemProperty("nexus.password")
-	 String nexusPassword;
+	@Inject
+	@SystemProperty("nexus.user")
+	String nexusUser;
+
+	@Inject
+	@SystemProperty("nexus.password")
+	String nexusPassword;
 
 	public List<Artefact> listArtefacts(String groupId, String artefact, String type) {
 
@@ -76,6 +78,52 @@ public class NexusDao {
 			builder.append(artefact);
 			builder.append("&p=");
 			builder.append(type);
+
+			HttpGet httpget = new HttpGet(builder.toString());
+			HttpResponse response = httpclient.execute(httpget);
+
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+
+				String responseString = EntityUtils.toString(entity, "UTF-8");
+
+				JAXBContext jaxbContext = JAXBContext.newInstance(SearchResults.class);
+				Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+
+				StringReader reader = new StringReader(responseString);
+				SearchResults results = (SearchResults) unmarshaller.unmarshal(reader);
+				int i = 1;
+				for (Artefact artifact : results.getArtifactsCollection()) {
+					artifact.setId(i++);
+				}
+
+				return results.getArtifactsCollection();
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new IllegalStateException(e);
+		}
+		return null;
+
+	}
+
+	public List<Artefact> listPackages(Deployment deployment) {
+
+
+		try {
+
+			HttpClient httpclient = new DefaultHttpClient();
+			// compose URI for accessing Nexus
+			StringBuilder builder = new StringBuilder();
+			builder.append(nexusUrl);
+
+			builder.append("/service/local/data_index/repositories/deployments/content");
+			builder.append("?g=");
+			builder.append(deployment.getGroupIdentification());
+			builder.append("&a=");
+			builder.append(deployment.getArtifact());
+			builder.append("&p=");
 
 			HttpGet httpget = new HttpGet(builder.toString());
 			HttpResponse response = httpclient.execute(httpget);
@@ -129,7 +177,7 @@ public class NexusDao {
 			// compose URI for accessing Nexus
 			StringBuilder builder = new StringBuilder();
 			builder.append(nexusUrl);
-			builder.append("/service/local/artifact/maven/redirect?r=bjb-releases");
+			builder.append("/service/local/artifact/maven/redirect?r=releases");
 			builder.append("&g=");
 			builder.append(groupId);
 			builder.append("&a=");
@@ -152,7 +200,8 @@ public class NexusDao {
 
 				}
 
-				throw new IllegalStateException(new FileNotFoundException("Deployment artefact" + artefact + " not located!"));
+				throw new IllegalStateException(
+						new FileNotFoundException("Deployment artefact" + artefact + " not located!"));
 			}
 
 			HttpEntity entity = response.getEntity();
@@ -174,35 +223,32 @@ public class NexusDao {
 	 * @param filePath
 	 * @return
 	 */
-	public String uploadArtefact(String filePath) {
+	public String uploadArtefact(String filePath, Profile profile) {
 
 		try {
 			HttpClient client = HttpClientBuilder.create().build();
 			HttpPost post = new HttpPost(nexusUrl + "/content/repositories");
-			
+
 			String auth = nexusUser + ":" + nexusPassword;
 			byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("ISO-8859-1")));
 			String authHeader = "Basic " + new String(encodedAuth);
 			post.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
-			
-			
-			
+
 			InputStream inputStream = new FileInputStream(filePath);
 
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 			builder.addBinaryBody("upstream", inputStream, ContentType.create("application/zip"), filePath);
-			builder.addPart("r", new StringBody("releases",ContentType.MULTIPART_FORM_DATA));
-			builder.addPart("g", new StringBody("ch.agilesolutions.jboss",ContentType.MULTIPART_FORM_DATA));
-			builder.addPart("a", new StringBody("jdo",ContentType.MULTIPART_FORM_DATA));
-			builder.addPart("v", new StringBody("1.0",ContentType.MULTIPART_FORM_DATA));
-			builder.addPart("p", new StringBody("tar",ContentType.MULTIPART_FORM_DATA));
-			builder.addPart("e", new StringBody("tar",ContentType.MULTIPART_FORM_DATA));
+			builder.addPart("r", new StringBody("releases", ContentType.MULTIPART_FORM_DATA));
+			builder.addPart("g", new StringBody(String.format("com.%s", profile.getDomain()), ContentType.MULTIPART_FORM_DATA));
+			builder.addPart("a", new StringBody(profile.getName(), ContentType.MULTIPART_FORM_DATA));
+			builder.addPart("v", new StringBody(String.format("%s.0.0", profile.getVersion()), ContentType.MULTIPART_FORM_DATA));
+			builder.addPart("p", new StringBody("tar", ContentType.MULTIPART_FORM_DATA));
+			builder.addPart("e", new StringBody("tar", ContentType.MULTIPART_FORM_DATA));
 			HttpEntity entity = builder.build();
 			post.setEntity(entity);
-			
-			HttpResponse response = client.execute(post);
 
+			HttpResponse response = client.execute(post);
 
 			return response.getStatusLine().toString();
 
@@ -212,8 +258,6 @@ public class NexusDao {
 		}
 
 	}
-
-
 
 	/**
 	 * 
@@ -252,8 +296,7 @@ public class NexusDao {
 			e.printStackTrace();
 			throw new IllegalStateException(e);
 		}
-		return ClientBuilder.newBuilder().sslContext(sc).register(new Authenticator("deployment", "deployment4bjb")).build();
+		return ClientBuilder.newBuilder().sslContext(sc).register(new Authenticator(nexusUser, nexusPassword)).build();
 	}
-
 
 }

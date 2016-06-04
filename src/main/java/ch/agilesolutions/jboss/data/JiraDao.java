@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import com.atlassian.jira.rest.client.JiraRestClient;
 import com.atlassian.jira.rest.client.NullProgressMonitor;
 import com.atlassian.jira.rest.client.domain.BasicIssue;
-import com.atlassian.jira.rest.client.domain.BasicProject;
 import com.atlassian.jira.rest.client.domain.BasicUser;
 import com.atlassian.jira.rest.client.domain.Comment;
 import com.atlassian.jira.rest.client.domain.Issue;
@@ -131,10 +130,10 @@ public class JiraDao {
 		List<JiraTicket> tickets = new ArrayList<JiraTicket>();
 		
 		JiraTicket ticket = new JiraTicket();
-		ticket.setId("JDO");
-		ticket.setProject("JDO");
+		ticket.setId("JDO-4");
+		ticket.setProject("JDO-4");
 		ticket.setStatus("In Progress");
-		ticket.setSummary("Deployment JDO to UAT");
+		ticket.setSummary("Deployment Kickstart to UAT");
 		
 		tickets.add(ticket);
 

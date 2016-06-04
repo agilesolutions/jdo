@@ -8,8 +8,6 @@ public class Deployment {
 	@Expose(serialize = true)
 	private String name;
 	@Expose(serialize = true)
-	private String description;
-	@Expose(serialize = true)
 	private String artifact;
 	@Expose(serialize = true)
 	private String groupIdentification;
@@ -84,11 +82,7 @@ public class Deployment {
 	}
 
 	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
+		return String.format("%s.%s-%s",groupIdentification, artifact, version);
 	}
 
 	@Override

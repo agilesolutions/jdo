@@ -7,7 +7,8 @@
 	xmlns:p="http://primefaces.org/ui">
 
 <h:head>
-	<title>NEXUS browse for Profile #{profileController.profile.name}</title>
+	<title>NEXUS browse for Profile
+		#{profileController.profile.name}</title>
 
 
 </h:head>
@@ -63,7 +64,7 @@
 						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
 						rows="12" selection="#{profileController.selectedArtefact}"
 						selectionMode="single" id="artifactTable">
-						
+
 						<p:ajax event="rowSelect" update="@form" />
 
 						<f:facet name="header">
@@ -97,12 +98,25 @@
 					process="updatePanel"
 					actionListener="#{profileController.searchDeployment()}" />
 
-				<p:commandButton value="Close" update="growl" process="updatePanel" immediate="true"
-					actionListener="#{profileController.closeNEXUSView}"/>
+				<p:commandButton value="Close" update="growl" process="updatePanel"
+					immediate="true"
+					actionListener="#{profileController.closeNEXUSView}" />
 			</p:panel>
 		</h:panelGroup>
 
 	</h:form>
+
+	<p:ajaxStatus
+		style="width:64px;height:64px;position:fixed;right:5px;bottom:60px">
+		<f:facet name="start">
+			<p:graphicImage value="/resources/images/loading.gif" />
+		</f:facet>
+
+		<f:facet name="complete">
+			<h:outputText value="" />
+		</f:facet>
+	</p:ajaxStatus>
+
 </h:body>
 
 </html>
