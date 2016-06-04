@@ -46,8 +46,6 @@
 		<property name="jira.password" value="klootzak2016" />
 	</system-properties>
 
-
-
 	<management>
 		<security-realms>
 			<security-realm name="ManagementRealm">
