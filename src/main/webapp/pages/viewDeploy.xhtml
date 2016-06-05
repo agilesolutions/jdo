@@ -126,21 +126,22 @@
 
 			<p:growl id="growl" sticky="true" showDetail="true" />
 
+			<p:ajaxStatus
+				style="width:64px;height:64px;position:fixed;right:5px;bottom:60px">
+				<f:facet name="start">
+					<p:graphicImage value="/resources/images/loading.gif" />
+				</f:facet>
+
+				<f:facet name="complete">
+					<h:outputText value="" />
+				</f:facet>
+			</p:ajaxStatus>
 
 		</p:confirmDialog>
 
 
 	</h:form>
-	<p:ajaxStatus
-		style="width:64px;height:64px;position:fixed;right:5px;bottom:60px">
-		<f:facet name="start">
-			<p:graphicImage value="/resources/images/loading.gif" />
-		</f:facet>
 
-		<f:facet name="complete">
-			<h:outputText value="" />
-		</f:facet>
-	</p:ajaxStatus>
 
 </h:body>
 

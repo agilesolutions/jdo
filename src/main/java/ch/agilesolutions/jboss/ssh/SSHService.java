@@ -140,7 +140,7 @@ public class SSHService {
 
 			session.connect();
 		} catch (Exception e) {
-			throw new IllegalStateException("Error establising JIRA REST connection.", e);
+			throw new IllegalStateException("Error establising SSH connection.", e);
 		}
 
 		return session;

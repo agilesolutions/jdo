@@ -1,7 +1,9 @@
 package ch.agilesolutions.jboss.data;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.Charset;
@@ -26,14 +28,18 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 
@@ -44,6 +50,11 @@ import ch.agilesolutions.jboss.model.Profile;
 import ch.agilesolutions.jboss.model.SearchResults;
 import ch.agilesolutions.jboss.util.Authenticator;
 
+/**
+ * https://oss.sonatype.org/nexus-restlet1x-plugin/default/docs/path__artifact_maven.html
+ * @author Carol
+ *
+ */
 @Stateless
 public class NexusDao {
 
@@ -288,7 +299,7 @@ public class NexusDao {
 
 		try {
 			HttpClient client = HttpClientBuilder.create().build();
-			HttpPost post = new HttpPost(nexusUrl + "/content/repositories");
+			HttpPost post = new HttpPost(nexusUrl + "/service/local/artifact/maven/content");
 
 			String auth = nexusUser + ":" + nexusPassword;
 			byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("ISO-8859-1")));
@@ -299,15 +310,15 @@ public class NexusDao {
 
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 			builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-			builder.addBinaryBody("upstream", inputStream, ContentType.create("application/zip"), filePath);
-			builder.addPart("r", new StringBody("releases", ContentType.MULTIPART_FORM_DATA));
+			builder.addBinaryBody("upstream", inputStream, ContentType.create("*/*"), filePath);
+			builder.addPart("r", new StringBody("deployments", ContentType.MULTIPART_FORM_DATA));
 			builder.addPart("g",
-					new StringBody(String.format("com.%s", profile.getDomain()), ContentType.MULTIPART_FORM_DATA));
+					new StringBody(String.format("ch.%s", profile.getDomain()), ContentType.MULTIPART_FORM_DATA));
 			builder.addPart("a", new StringBody(profile.getName(), ContentType.MULTIPART_FORM_DATA));
 			builder.addPart("v",
 					new StringBody(String.format("%s.0.0", profile.getVersion()), ContentType.MULTIPART_FORM_DATA));
-			builder.addPart("p", new StringBody("tar", ContentType.MULTIPART_FORM_DATA));
-			builder.addPart("e", new StringBody("tar", ContentType.MULTIPART_FORM_DATA));
+			builder.addPart("p", new StringBody("tar.gz", ContentType.MULTIPART_FORM_DATA));
+			//builder.addPart("e", new StringBody("tar.gz", ContentType.MULTIPART_FORM_DATA));
 			HttpEntity entity = builder.build();
 			post.setEntity(entity);
 
@@ -319,6 +330,59 @@ public class NexusDao {
 			e.printStackTrace();
 			throw new IllegalStateException(e);
 		}
+
+	}
+	
+	/**
+	 * 
+	 * http://www.baeldung.com/httpclient-multipart-upload
+	 * 
+	 * http://stackoverflow.com/questions/30247101/uploading-jar-to-nexus-with-spring-resttemplate
+	 * 
+	 * @param filePath
+	 * @return
+	 */
+	public String uploadArtefactToNexus(String filePath, Profile profile) {
+		
+		String status = "";
+
+	    try(CloseableHttpClient httpClient = HttpClients.createDefault())
+	    {
+	        HttpPost httpPost = new HttpPost(nexusUrl +"/service/local/artifact/maven/content");
+	        
+			String auth = nexusUser + ":" + nexusPassword;
+			byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("ISO-8859-1")));
+			String authHeader = "Basic " + new String(encodedAuth);
+			httpPost.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+
+
+	        FileBody jarFileBody = new FileBody(new File(filePath));
+
+	        HttpEntity requestEntity = MultipartEntityBuilder.create()
+	                .addPart("r", new StringBody("deployments", ContentType.TEXT_PLAIN))
+	                .addPart("hasPom", new StringBody("false", ContentType.TEXT_PLAIN))
+	                .addPart("e", new StringBody("tar.gz", ContentType.TEXT_PLAIN))
+	                .addPart("g", new StringBody(String.format("ch.%s", profile.getDomain()), ContentType.TEXT_PLAIN))
+	                .addPart("a", new StringBody(profile.getName(), ContentType.TEXT_PLAIN))
+	                .addPart("v", new StringBody(String.format("%s.0.0", profile.getVersion()), ContentType.TEXT_PLAIN))
+	                .addPart("p", new StringBody("tar.gz", ContentType.TEXT_PLAIN))
+	                .addPart("file", jarFileBody)
+	                .build();
+
+	        httpPost.setEntity(requestEntity);
+
+	        try(CloseableHttpResponse response = httpClient.execute(httpPost))
+	        {
+	            logger.info("response from nexus: {}", response.toString());
+	            status = response.getStatusLine().toString();
+	        }
+	    }
+	    catch (IOException e)
+	    {
+	        throw new RuntimeException("Unable to close the httpClient", e);
+	    }
+	    
+	    return status;
 
 	}
 

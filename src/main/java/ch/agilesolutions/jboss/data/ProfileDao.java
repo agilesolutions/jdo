@@ -124,7 +124,7 @@ public class ProfileDao {
 	public List<Profile> findAll() {
 
 		try {
-			//git.checkout().setName("master").call();
+			git.checkout().setName("master").call();
 			git.pull().call();
 		} catch (GitAPIException e) {
 			logger.error("Error synchronizing GIT repository ", e);

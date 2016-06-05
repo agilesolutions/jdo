@@ -73,10 +73,9 @@ public class Packager {
 		String tarFile = tarArchiver.build(profile);
 
 		// sshService.copyArtefact("me.rodakr.com", tarFile, "/var/tmp");
+		
+		return nexusDao.uploadArtefactToNexus(tarFile, profile);
 
-		return "package completed successfully";
-
-		// return nexusDao.uploadArtefact(tarFile, profile);
 
 	}
 

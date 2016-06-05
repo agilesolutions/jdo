@@ -63,6 +63,7 @@ public class Deployer {
 
 			returned = sshService.execCommand(host, String.format("%s/%s/execute.sh", SERVER_ROOT,profile.getDomain()));
 		} catch (Exception e) {
+			returned = String.format("Error copying or executing through SSH %s", e.getMessage());
 			logger.error("Error copying or executing through SSH ", e);
 			throw new IllegalStateException(e);
 		}
