@@ -1112,6 +1112,8 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		try {
 			deploymentStatus = deployer.deploy(host, profile, selectedPackage);
+			
+            //jiraDao.saveComment(selectedTicket.getId(), String.format("Package ch.%s.%s-%s deployed to host %s", profile.getDomain(), profile.getName(),profile.getVersion(),host));
 
 			submitMessage(FacesMessage.SEVERITY_INFO,
 					String.format("Packaged %s submitted for deployment", selectedPackage.getArtifactId()), true);
@@ -1180,6 +1182,8 @@ public class ProfileController extends AbstractController implements Serializabl
 		}
 
 		String response = packager.generate(profile);
+		
+        //jiraDao.saveComment(selectedTicket.getId(), String.format("Package ch.%s.%s-%s uploaded to NEXUS", profile.getDomain(), profile.getName(),profile.getVersion()));
 
 		submitMessage(FacesMessage.SEVERITY_INFO,
 				String.format("RPM package created and published to NEXUS with status %s", response), true);
