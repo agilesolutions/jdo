@@ -46,6 +46,7 @@
 		<property name="jira.password" value="enator" />
 	</system-properties>
 
+
 	<management>
 		<security-realms>
 			<security-realm name="ManagementRealm">
