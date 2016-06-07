@@ -31,8 +31,11 @@ public class JiraProvider {
 		JerseyJiraRestClientFactory f = new JerseyJiraRestClientFactory();
 		JiraRestClient jc;
 		try {
+			System.out.println("*************JIRA CONNET******" + jiraUser + " pass " + jiraPassword );
 			jc = f.createWithBasicHttpAuthentication(new URI(jiraUrl), jiraUser, jiraPassword);
+			System.out.println("*************JIRA DONE******" + jiraUser + " pass " + jiraPassword );
 		} catch (Exception e) {
+			System.out.println("*************JIRA FAIL******" + jiraUser + " pass " + jiraPassword );
 			throw new IllegalStateException("Error establising JIRA REST connection.", e);
 		}
 
