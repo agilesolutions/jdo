@@ -33,7 +33,7 @@ public class JiraDao {
 	@Inject
 	private Logger logger;
 
-	@Inject
+	//@Inject
 	JiraRestClient client;
 
 	final NullProgressMonitor pm = new NullProgressMonitor();
@@ -47,21 +47,20 @@ public class JiraDao {
 
 		List<JiraProject> projects = new ArrayList<JiraProject>();
 
-		// JiraProject project = new JiraProject("JDO", "JBoss DevOps
-		// development process");
-		// projects.add(project);
+		 JiraProject project = new JiraProject("JDO", "JBoss DevOps development process");
+		 projects.add(project);
 
-		try {
-
-			for (final BasicProject prj : client.getProjectClient().getAllProjects(pm)) {
-
-				projects.add(new JiraProject(prj.getKey(), prj.getName()));
-			}
-
-		} catch (Exception e) {
-			logger.warn("Error retrieving projects from JIRA", e);
-			throw new IllegalStateException("Error retrieving projects from JIRA", e);
-		}
+//		try {
+//
+//			for (final BasicProject prj : client.getProjectClient().getAllProjects(pm)) {
+//
+//				projects.add(new JiraProject(prj.getKey(), prj.getName()));
+//			}
+//
+//		} catch (Exception e) {
+//			logger.warn("Error retrieving projects from JIRA", e);
+//			throw new IllegalStateException("Error retrieving projects from JIRA", e);
+//		}
 
 		return projects;
 
@@ -75,14 +74,14 @@ public class JiraDao {
 	 */
 	public void saveComment(String key, String comment) {
 
-		try {
-			com.atlassian.jira.rest.client.domain.Issue issue = client.getIssueClient().getIssue(key, pm);
-			client.getIssueClient().addComment(pm, issue.getCommentsUri(), Comment.valueOf(comment));
-		} catch (Exception e) {
-			logger.warn("Error submitting comment text to JIRA", e);
-			throw new IllegalStateException("JiraDao:saveComment : error saving comment text on JIRA ticket", e);
-
-		}
+//		try {
+//			com.atlassian.jira.rest.client.domain.Issue issue = client.getIssueClient().getIssue(key, pm);
+//			client.getIssueClient().addComment(pm, issue.getCommentsUri(), Comment.valueOf(comment));
+//		} catch (Exception e) {
+//			logger.warn("Error submitting comment text to JIRA", e);
+//			throw new IllegalStateException("JiraDao:saveComment : error saving comment text on JIRA ticket", e);
+//
+//		}
 
 	}
 
@@ -135,33 +134,33 @@ public class JiraDao {
 
 		List<JiraTicket> tickets = new ArrayList<JiraTicket>();
 
-		// JiraTicket ticket = new JiraTicket();
-		// ticket.setId("JDO-4");
-		// ticket.setProject("JDO-4");
-		// ticket.setStatus("In Progress");
-		// ticket.setSummary("Deployment Kickstart to UAT");
-		// tickets.add(ticket);
+		 JiraTicket ticket = new JiraTicket();
+		 ticket.setId("JDO-4");
+		 ticket.setProject("JDO-4");
+		 ticket.setStatus("In Progress");
+		 ticket.setSummary("Deployment Kickstart to UAT");
+		 tickets.add(ticket);
 
-		try {
-
-			SearchResult result = client.getSearchClient().searchJql(
-					String.format("project = %s and type = Deployment and status in ('In Progress')", projectKey), pm);
-
-			for (BasicIssue bi : result.getIssues()) {
-
-				Issue issue = client.getIssueClient().getIssue(bi.getKey(), pm);
-
-				JiraTicket ticket = new JiraTicket(bi.getKey(), issue.getDescription(), issue.getStatus().getName());
-
-				tickets.add(ticket);
-
-			}
-
-		} catch (Exception e) {
-
-			logger.warn("Project not found", e);
-
-		}
+//		try {
+//
+//			SearchResult result = client.getSearchClient().searchJql(
+//					String.format("project = %s and type = Deployment and status in ('In Progress')", projectKey), pm);
+//
+//			for (BasicIssue bi : result.getIssues()) {
+//
+//				Issue issue = client.getIssueClient().getIssue(bi.getKey(), pm);
+//
+//				JiraTicket ticket = new JiraTicket(bi.getKey(), issue.getDescription(), issue.getStatus().getName());
+//
+//				tickets.add(ticket);
+//
+//			}
+//
+//		} catch (Exception e) {
+//
+//			logger.warn("Project not found", e);
+//
+//		}
 
 		return tickets;
 
