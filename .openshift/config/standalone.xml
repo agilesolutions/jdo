@@ -41,7 +41,7 @@
         <property name="nexus.user" value="admin"/>
         <property name="nexus.password" value="klootzak2016"/>
         <property name="jira.url" value="https://agile-solutions-board.atlassian.net"/>
-        <property name="jira.user" value="duke"/>
+        <property name="jira.user" value="admin"/>
         <property name="jira.password" value="enator"/>
     </system-properties>
 
