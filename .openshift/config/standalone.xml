@@ -31,20 +31,18 @@
 		<extension module="org.wildfly.extension.undertow" />
 	</extensions>
 
-	<system-properties>
-		<property name="git.user" value="robertrong" />
-		<property name="git.password" value="klootzak2016" />
-		<property name="git.url"
-			value="https://robertrong:klootzak2016@bitbucket.org/robertrong/profiles.git" />
-		<property name="template.url"
-			value="https://klootzak:klootzak2016@bitbucket.org/jdo2016/store.git" />
-		<property name="nexus.url" value="http://nexus2-robertrong.rhcloud.com/nexus" />
-		<property name="nexus.user" value="admin" />
-		<property name="nexus.password" value="klootzak2016" />
-		<property name="jira.url" value="https://agile-solutions-board.atlassian.net" />
-		<property name="jira.user" value="duke" />
-		<property name="jira.password" value="enator" />
-	</system-properties>
+    <system-properties>
+        <property name="git.user" value="robertrong"/>
+        <property name="git.password" value="klootzak2016"/>
+        <property name="git.url" value="https://robertrong:klootzak2016@bitbucket.org/robertrong/profiles.git"/>
+        <property name="template.url" value="https://klootzak:klootzak2016@bitbucket.org/jdo2016/store.git"/>
+        <property name="nexus.url" value="http://nexus2-robertrong.rhcloud.com/nexus"/>
+        <property name="nexus.user" value="admin"/>
+        <property name="nexus.password" value="klootzak2016"/>
+        <property name="jira.url" value="https://agile-solutions-board.atlassian.net"/>
+        <property name="jira.user" value="duke"/>
+        <property name="jira.password" value="enator"/>
+    </system-properties>
 
 	<management>
 		<security-realms>
