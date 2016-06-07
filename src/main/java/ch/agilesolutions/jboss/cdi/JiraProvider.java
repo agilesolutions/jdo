@@ -25,6 +25,7 @@ public class JiraProvider {
 	String jiraPassword;
 	
 
+	
 	@Produces
 	JiraRestClient createJIRAConnection(InjectionPoint injectionPoint) {
 
