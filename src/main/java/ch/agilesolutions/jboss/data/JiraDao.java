@@ -37,7 +37,6 @@ public class JiraDao {
 	JiraRestClient client;
 
 	final NullProgressMonitor pm = new NullProgressMonitor();
-	
 
 	/**
 	 * List all available JIRA projects.

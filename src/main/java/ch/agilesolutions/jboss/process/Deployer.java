@@ -37,7 +37,7 @@ import ch.agilesolutions.jboss.ssh.SSHService;
 public class Deployer {
 
 	private static final String STAGING_DIR = System.getProperty("jboss.server.data.dir") + "/staging";
-	
+
 	private static final String SERVER_ROOT = "/opt";
 
 	@Inject
@@ -59,13 +59,16 @@ public class Deployer {
 		String returned = "";
 
 		try {
-			sshService.copyArtefact(host, filename, String.format("%s/%s", SERVER_ROOT,profile.getDomain()));
 
-			returned = sshService.execCommand(host, String.format("%s/%s/execute.sh", SERVER_ROOT,profile.getDomain()));
+			sshService.copyArtefact(host, filename, "/var/tmp");
+
+			sshService.execCommand(host, "tar zxvf /var/tmp/" + filename);
+
+			returned = sshService.execCommand(host, "/var/tmp/execute.sh");
+
 		} catch (Exception e) {
 			returned = String.format("Error copying or executing through SSH %s", e.getMessage());
 			logger.error("Error copying or executing through SSH ", e);
-			throw new IllegalStateException(e);
 		}
 		return returned;
 
@@ -90,17 +93,17 @@ public class Deployer {
 	}
 
 	private String downloadArtefacts(Artefact artefact, Profile profile) {
-		
+
 		String profileStagingDirectory = STAGING_DIR + File.separator + profile.getName();
-		
+
 		// build staging folder structure
 		File theDir = new File(profileStagingDirectory);
-		
-		// if staging directory exists delete content
-				if (!theDir.exists()) {
 
-					theDir.mkdir();
-				}
+		// if staging directory exists delete content
+		if (!theDir.exists()) {
+
+			theDir.mkdir();
+		}
 
 		InputStream inputStream = nexusDao.getDeployment(artefact.getGroupId(), artefact.getArtifactId(),
 				artefact.getVersion(), artefact.getPackaging());

@@ -169,8 +169,8 @@ public class Packager {
 
 			FileOutputStream fos = null;
 
-			String fileName = STAGING_DIR + File.separator + profile.getName() + File.separator + profile.getName()
-					+ ".tgz";
+			String fileName = STAGING_DIR + File.separator + profile.getName() + File.separator + d.getArtifact()
+					+ "." + d.getType();
 
 			if (inputStream != null) {
 				try {
