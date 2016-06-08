@@ -37,15 +37,15 @@ public class ImportXML {
 	@Inject
 	private Logger logger;
 
-	public String importProfile(InputStream is, String domainName, String host) {
+	public String importProfile(InputStream is, String profileName, String domainName, String host) {
 
 		StringBuilder consoleOutput = new StringBuilder();
 
 		Profile profile = new Profile();
 
 		profile.setDomain(domainName);
-		profile.setName(String.format("%s-%s", domainName, host));
-		profile.setDescription(String.format("%s-%s", domainName, host));
+		profile.setName(profileName);
+		profile.setDescription(String.format("%s@%s", domainName, host));
 		profile.setHostName(host);
 		profile.setEnvironment(Environment.SIT.name());
 

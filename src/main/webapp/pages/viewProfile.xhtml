@@ -16,8 +16,7 @@
 				<p:menuitem value="Select" icon="/resources/images/search.png"
 					onclick="PF('editSelection').show();" />
 				<p:menuitem value="Import" icon="/resources/images/update.png"
-					update ="importFeedback"
-					onclick="PF('importDialog').show();" />
+					update="importFeedback" onclick="PF('importDialog').show();" />
 				<p:menuitem value="CLI" icon="/resources/images/cli.png"
 					onclick="PF('generateDialog').show();" />
 				<p:menuitem value="PACKAGE" icon="/resources/images/package.png"
@@ -138,10 +137,15 @@
 					<p:fileUpload mode="advanced"
 						label="Select JBoss standalone XML file to import"
 						sizeLimit="30720000" showButtons="false"
-						update="messages,specifyImport,importFeedback" process="specifyImport"
+						update="messages,specifyImport,importFeedback"
+						process="specifyImport"
 						fileUploadListener="#{profileController.upload}" />
 				</h:panelGrid>
 				<h:panelGrid id="specifyImport" columns="2" cellpadding="4">
+
+					<h:outputText value="Name" />
+					<p:inputText value="#{profileController.profileName}" 
+						size="40" />
 
 					<h:outputText value="Domain" />
 
@@ -167,14 +171,15 @@
 				</h:panelGrid>
 				<h:panelGrid columns="" cellpadding="4">
 
-					<p:inputTextarea rows="36" cols="200" maxlength="800" id="importFeedback"
-						counterTemplate="{0} characters remaining." autoResize="false"
-						value="#{profileController.feedback}" readonly="true" />
+					<p:inputTextarea rows="36" cols="200" maxlength="800"
+						id="importFeedback" counterTemplate="{0} characters remaining."
+						autoResize="false" value="#{profileController.feedback}"
+						readonly="true" />
 
 				</h:panelGrid>
 				<p:commandButton value="Close"
 					oncomplete="PF('importDialog').hide();"
-					actionListener="#{profileController.closeImport()}" 
+					actionListener="#{profileController.closeImport()}"
 					update="messages,:form:tree" />
 
 			</p:dialog>

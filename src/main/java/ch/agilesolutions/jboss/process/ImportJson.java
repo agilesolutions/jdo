@@ -112,7 +112,6 @@ public class ImportJson {
 				Logger logger = new Logger();
 
 				logger.setName(l.getCategory());
-				logger.setDescription(l.getCategory());
 				logger.setLogLevel(l.getLevel().getName());
 				logger.setParent(l.getUseParentHandlers());
 				profile.getLoggers().add(logger);

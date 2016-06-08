@@ -122,6 +122,8 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	private String domain = "";
 
+	private String profileName = "";
+
 	private String host = "";
 
 	private Domains domains = new Domains();
@@ -899,7 +901,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		try {
 
-			feedback = importXML.importProfile(event.getFile().getInputstream(), domain, host);
+			feedback = importXML.importProfile(event.getFile().getInputstream(), profileName, domain, host);
 
 		} catch (Exception e) {
 			submitMessage(FacesMessage.SEVERITY_WARN, "Error occurred during JSON upload...", e, false);
@@ -1195,6 +1197,12 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	}
 
+	public List<String> getHandlers() {
+
+		return profile.getHandlers().stream().map(d -> d.getName()).collect(Collectors.toList());
+
+	}
+
 	/**
 	 * Generate package for current selected profile.
 	 */
@@ -1238,5 +1246,14 @@ public class ProfileController extends AbstractController implements Serializabl
 	public void setSubmitDate(Date submitDate) {
 		this.submitDate = submitDate;
 	}
+
+	public String getProfileName() {
+		return profileName;
+	}
+
+	public void setProfileName(String profileName) {
+		this.profileName = profileName;
+	}
+	
 
 }
