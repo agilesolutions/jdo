@@ -40,6 +40,7 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.NodeSelectEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
+import org.primefaces.model.UploadedFile;
 
 import ch.agilesolutions.jboss.data.DomainDao;
 import ch.agilesolutions.jboss.data.GitDao;
@@ -47,6 +48,7 @@ import ch.agilesolutions.jboss.data.HpsmDao;
 import ch.agilesolutions.jboss.data.JiraDao;
 import ch.agilesolutions.jboss.data.NexusDao;
 import ch.agilesolutions.jboss.data.ProfileDao;
+import ch.agilesolutions.jboss.data.ReferenceDataDao;
 import ch.agilesolutions.jboss.model.Artefact;
 import ch.agilesolutions.jboss.model.Deployment;
 import ch.agilesolutions.jboss.model.Domains;
@@ -54,6 +56,7 @@ import ch.agilesolutions.jboss.model.Environment;
 import ch.agilesolutions.jboss.model.JiraProject;
 import ch.agilesolutions.jboss.model.JiraTicket;
 import ch.agilesolutions.jboss.model.Profile;
+import ch.agilesolutions.jboss.model.ReferenceData;
 import ch.agilesolutions.jboss.model.Tree;
 import ch.agilesolutions.jboss.process.Deployer;
 import ch.agilesolutions.jboss.process.ImportJson;
@@ -80,6 +83,9 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	@Inject
 	private DomainDao domainDao;
+
+	@Inject
+	private ReferenceDataDao referenceDataDao;
 
 	@Inject
 	private TemplateProcessor templateProcessor;
@@ -120,13 +126,15 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	private TreeNode selectedNode;
 
-	private String domain = "";
+	private String domain = "all";
 
 	private String profileName = "";
 
 	private String host = "";
 
 	private Domains domains = new Domains();
+
+	private ReferenceData referenceData = new ReferenceData();
 
 	private String title;
 
@@ -140,7 +148,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	private Artefact selectedPackage = new Artefact();
 
-	private List<JiraTicket> jiraTickets = new ArrayList<>();
+	private List<JiraTicket> jiraTickets;
 
 	List<JiraProject> jiraProjects = new ArrayList<>();
 
@@ -161,8 +169,6 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		try {
 
-			domain = "all";
-
 			jiraProjects = jiraDao.getProjects();
 
 			profiles = profileDao.findAll();
@@ -170,6 +176,8 @@ public class ProfileController extends AbstractController implements Serializabl
 			root = createTree(profiles);
 
 			domains = domainDao.get();
+
+			referenceData = referenceDataDao.get();
 
 		} catch (Exception e) {
 			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while populating profile view...",
@@ -907,8 +915,14 @@ public class ProfileController extends AbstractController implements Serializabl
 			submitMessage(FacesMessage.SEVERITY_WARN, "Error occurred during JSON upload...", e, false);
 		}
 
-		submitMessage(FacesMessage.SEVERITY_INFO,
-				String.format("JBoss config file %s imported successfully", event.getFile().getFileName()), true);
+		submitMessage(FacesMessage.SEVERITY_INFO, String.format("Profile %s created through import", profileName),
+				true);
+
+	}
+
+	public void updateProfileName(final AjaxBehaviorEvent event) {
+
+		profileName = (String) event.getComponent().getAttributes().get("value");
 
 	}
 
@@ -965,18 +979,22 @@ public class ProfileController extends AbstractController implements Serializabl
 	}
 
 	public List<JiraTicket> getJiraTickets() {
-		return jiraTickets;
+		return jiraDao.getAllTickets(profile.getJiraKey());
+	}
+
+	public void setJiraTickets(List<JiraTicket> jiraTickets) {
+		this.jiraTickets = jiraTickets;
+	}
+
+	public JiraTicket getSelectedTicket() {
+
+		return selectedTicket;
 	}
 
 	public void loadJiraTickets() {
 
 		jiraTickets = jiraDao.getAllTickets(profile.getJiraKey());
 
-	}
-
-	public JiraTicket getSelectedTicket() {
-
-		return selectedTicket;
 	}
 
 	public void setSelectedTicket(JiraTicket selectedTicket) {
@@ -1064,6 +1082,11 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	public void showDeployment() {
 
+		if (profile.getName() == null) {
+			submitMessage(FacesMessage.SEVERITY_INFO, "Select profile first before update", true);
+			return;
+		}
+
 		this.artefacts.clear();
 
 		Map<String, Object> options = new HashMap<String, Object>();
@@ -1117,20 +1140,6 @@ public class ProfileController extends AbstractController implements Serializabl
 		try {
 			deploymentStatus = deployer.deploy(host, profile, selectedPackage);
 
-			// jiraDao.saveComment(selectedTicket.getId(),
-			// String.format("Package ch.%s.%s-%s deployed to host %s",
-			// profile.getDomain(),
-			// profile.getName(),profile.getVersion(),host));
-
-			List<JiraTicket> tickets = jiraDao.getAllTickets(profile.getJiraKey());
-
-			if (tickets.size() > 0) {
-
-				jiraDao.saveComment(tickets.get(0).getId(), String.format("Package ch.%s.%s-%s deployed to host %s",
-						profile.getDomain(), profile.getName(), profile.getVersion(), host));
-
-			}
-
 			submitMessage(FacesMessage.SEVERITY_INFO,
 					String.format("Packaged %s submitted for deployment", selectedPackage.getArtifactId()), true);
 
@@ -1159,15 +1168,6 @@ public class ProfileController extends AbstractController implements Serializabl
 	public void schedulePackage() {
 
 		deployer.schedule(host, profile, selectedPackage, submitDate);
-
-		List<JiraTicket> tickets = jiraDao.getAllTickets(profile.getJiraKey());
-
-		if (tickets.size() > 0) {
-
-			jiraDao.saveComment(tickets.get(0).getId(), String.format("Package ch.%s.%s-%s deployed to host %s",
-					profile.getDomain(), profile.getName(), profile.getVersion(), host));
-
-		}
 
 		submitMessage(FacesMessage.SEVERITY_INFO,
 				String.format("Packaged %s scheduled for deployment", selectedPackage.getArtifactId()), true);
@@ -1203,6 +1203,18 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	}
 
+	public List<String> getLogLevels() {
+		return referenceData.getLevels();
+	}
+
+	public List<String> getTypes() {
+		return referenceData.getHandlertypes();
+	}
+
+	public List<String> getFormatters() {
+		return referenceData.getFormatters();
+	}
+
 	/**
 	 * Generate package for current selected profile.
 	 */
@@ -1213,10 +1225,6 @@ public class ProfileController extends AbstractController implements Serializabl
 		}
 
 		String response = packager.generate(profile);
-
-		// jiraDao.saveComment(selectedTicket.getId(), String.format("Package
-		// ch.%s.%s-%s uploaded to NEXUS", profile.getDomain(),
-		// profile.getName(),profile.getVersion()));
 
 		submitMessage(FacesMessage.SEVERITY_INFO,
 				String.format("RPM package created and published to NEXUS with status %s", response), true);
@@ -1254,6 +1262,5 @@ public class ProfileController extends AbstractController implements Serializabl
 	public void setProfileName(String profileName) {
 		this.profileName = profileName;
 	}
-	
 
 }

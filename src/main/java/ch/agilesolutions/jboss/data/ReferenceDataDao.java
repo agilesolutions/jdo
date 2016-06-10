@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -14,13 +16,14 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 
-import ch.agilesolutions.jboss.cdi.SystemProperty;
-import ch.agilesolutions.jboss.model.Domains;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import ch.agilesolutions.jboss.cdi.SystemProperty;
+import ch.agilesolutions.jboss.model.ReferenceData;
+
 @Stateless
-public class DomainDao {
+public class ReferenceDataDao {
 
 	private static final String META_DIR = System.getProperty("jboss.server.data.dir") + "/database/meta";
 
@@ -42,17 +45,57 @@ public class DomainDao {
 	@SystemProperty("git.password")
 	String gitPassword;
 
-	public void save(Domains domains) {
+
+	/**
+	 * 
+	 * http://www.leveluplunch.com/java/examples/read-file-into-string/
+	 */
+	public ReferenceData get() {
+
+		try {
+			git.checkout().setName("master").call();
+			git.pull().call();
+		} catch (GitAPIException e) {
+			logger.error("Error synchronizing GIT repository ", e);
+			throw new IllegalStateException(e);
+
+		}
+
+		Gson gson = new Gson();
+
+		ReferenceData data = null;
+
+		String filename = META_DIR + File.separator + "referencedata.json";
+
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(filename));
+
+			data = gson.fromJson(br, ReferenceData.class);
+
+		} catch (FileNotFoundException e) {
+			ReferenceData dt = new ReferenceData();
+			dt.getFormatters().add("aa");
+			dt.getFormatters().add("bb");
+			save(dt);
+			logger.error("Error retrieving domains ", e);
+			throw new IllegalStateException(e);
+		}
+
+		return data;
+
+	}
+	
+	public void save(ReferenceData data) {
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
 
 		Gson gson = gsonBuilder.excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
 
-		String filename = META_DIR + File.separator + "domains.json";
+		String filename = META_DIR + File.separator + "referencedata.json";
 
 		try {
 
-			String jsonString = gson.toJson((Domains) domains);
+			String jsonString = gson.toJson((ReferenceData) data);
 
 			File theDir = new File(META_DIR);
 
@@ -69,7 +112,7 @@ public class DomainDao {
 
 			git.add().addFilepattern(".").call();
 
-			git.commit().setCommitter(gitUser, "robert.rong@agile-solutions.ch")
+			git.commit().setCommitter(gitUser, "robert.rong@s")
 					.setMessage("Domains configuration changed").call();
 
 			git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUser, gitPassword))
@@ -79,42 +122,6 @@ public class DomainDao {
 			logger.error("Error saving profile ", e);
 			throw new IllegalStateException(e);
 		}
-
-	}
-
-	/**
-	 * 
-	 * http://www.leveluplunch.com/java/examples/read-file-into-string/
-	 */
-	public Domains get() {
-
-		try {
-			git.checkout().setName("master").call();
-			git.pull().call();
-		} catch (GitAPIException e) {
-			logger.error("Error synchronizing GIT repository ", e);
-			throw new IllegalStateException(e);
-
-		}
-
-		Gson gson = new Gson();
-
-		Domains domains = null;
-
-		String filename = META_DIR + File.separator + "domains.json";
-
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(filename));
-
-			domains = gson.fromJson(br, Domains.class);
-
-		} catch (FileNotFoundException e) {
-			save(new Domains());
-			logger.error("Error retrieving domains ", e);
-			throw new IllegalStateException(e);
-		}
-
-		return domains;
 
 	}
 

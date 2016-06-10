@@ -25,6 +25,7 @@ import ch.agilesolutions.jboss.data.ProfileDao;
 import ch.agilesolutions.jboss.model.Datasource;
 import ch.agilesolutions.jboss.model.Driver;
 import ch.agilesolutions.jboss.model.Environment;
+import ch.agilesolutions.jboss.model.Handler;
 import ch.agilesolutions.jboss.model.Profile;
 import ch.agilesolutions.jboss.model.SystemProperty;
 
@@ -45,7 +46,7 @@ public class ImportXML {
 
 		profile.setDomain(domainName);
 		profile.setName(profileName);
-		profile.setDescription(String.format("%s@%s", domainName, host));
+		profile.setDescription(String.format("Profile %s on domain %s on server %s", profileName, domainName, host));
 		profile.setHostName(host);
 		profile.setEnvironment(Environment.SIT.name());
 
@@ -75,13 +76,15 @@ public class ImportXML {
 							processXADatasource(profile, eventReader, event, consoleOutput);
 						} else if (hasStartTagName(event, "system-properties")) {
 							processSystemProperties(profile, eventReader, event, consoleOutput);
-							// } else if (hasStartTagName(event, "mail-session")) {
-							// processMailSession(synchronizedMaster, eventReader, event, consoleOutput);
+						} else if (hasStartTagName(event, "logger")) {
+							processLogger(profile, eventReader, event, consoleOutput);
+						} else if (hasStartTagName(event, "periodic-rotating-file-handler")) {
+							processHandler(profile, eventReader, event, consoleOutput);
 						}
 					}
 				}
 
-				profileDao.save(profile, String.format("New profile %s imported through standalone.xml", profile.getName()));
+				profileDao.save(profile, String.format("Profile %s imported through standalone.xml", profile.getName()));
 
 			} catch (XMLStreamException ex) {
 				System.out.println(ex.getMessage());
@@ -94,9 +97,9 @@ public class ImportXML {
 		} catch (Exception ex) {
 			throw new IllegalStateException(ex);
 		}
-		
+
 		return consoleOutput.toString();
-		
+
 	}
 
 	private boolean hasStartTagName(XMLEvent e, String name) {
@@ -164,7 +167,12 @@ public class ImportXML {
 	}
 
 	private String getAttribute(XMLEvent event, String name) {
-		return ((StartElement) event).getAttributeByName(new QName(name)).getValue();
+
+		try {
+			return ((StartElement) event).getAttributeByName(new QName(name)).getValue();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private String getCharacters(XMLEventReader rdr) throws XMLStreamException {
@@ -188,7 +196,6 @@ public class ImportXML {
 	 *             any STAX exception occurred.
 	 */
 	private void processSystemProperties(Profile profile, XMLEventReader rdr, XMLEvent event, StringBuilder consoleOutput) throws Exception {
-
 
 		while (rdr.hasNext()) {
 			XMLEvent e = rdr.nextEvent();
@@ -288,6 +295,127 @@ public class ImportXML {
 			profile.getDatasources().add(datasource);
 		}
 
+	}
+
+	/**
+	 * 
+	 * Parse datasource elements.
+	 * 
+	 * @param rdr
+	 *            event stream.
+	 * @param event
+	 *            on start XML element for datasource.
+	 * @throws Exception
+	 *             any STAX exception occurred.
+	 */
+	private void processLogger(Profile profile, XMLEventReader rdr, XMLEvent event, StringBuilder consoleOutput) throws Exception {
+
+		ch.agilesolutions.jboss.model.Logger logger = new ch.agilesolutions.jboss.model.Logger();
+
+		if (getAttribute(event, "category") == null) {
+			return;
+		}
+
+		logger.setName(getAttribute(event, "category"));
+		logger.setParent((getAttribute(event, "use-parent-handlers") != null ? (getAttribute(event, "use-parent-handlers").equals("false") ? false : true) : false));
+
+		while (rdr.hasNext()) {
+			XMLEvent e = rdr.nextEvent();
+
+			if (e.isStartElement()) {
+				// process attributes
+				if (hasStartTagName(e, "level")) {
+					logger.setLogLevel(getAttribute(e, "name"));
+
+				} else if (hasStartTagName(e, "handlers")) {
+					// process elements
+					while (rdr.hasNext()) {
+						XMLEvent handlersEvent = rdr.nextEvent();
+						if (handlersEvent.isStartElement()) {
+							if (hasStartTagName(handlersEvent, "handler")) {
+								logger.setHandler(getCharacters(rdr));
+							}
+						}
+						if (handlersEvent.isEndElement()) {
+							if (hasEndTagName(handlersEvent, "handlers")) {
+								break;
+							}
+						}
+
+					}
+				}
+			}
+
+			if (e.isEndElement()) {
+				if (hasEndTagName(e, "logger")) {
+					break;
+				}
+			}
+		}
+		// only persist if there is no existing logger with same name
+		if (!profile.getLoggers().contains(logger)) {
+			consoleOutput.append("Imported logger  : " + logger.getName() + "\n");
+			profile.getLoggers().add(logger);
+		}
+	}
+
+	/**
+	 * 
+	 * Parse datasource elements.
+	 * 
+	 * @param rdr
+	 *            event stream.
+	 * @param event
+	 *            on start XML element for datasource.
+	 * @throws Exception
+	 *             any STAX exception occurred.
+	 */
+	private void processHandler(Profile profile, XMLEventReader rdr, XMLEvent event, StringBuilder consoleOutput) throws Exception {
+
+		Handler handler = new Handler();
+
+		handler.setName(getAttribute(event, "name"));
+		handler.setFlush((getAttribute(event, "autoflush") != null ? (getAttribute(event, "autoflush").equals("false") ? false : true) : false));
+
+		while (rdr.hasNext()) {
+			XMLEvent e = rdr.nextEvent();
+
+			if (e.isStartElement()) {
+				// process attributes
+				if (hasStartTagName(e, "file")) {
+					handler.setPath(getAttribute(e, "path"));
+				} else if (hasStartTagName(e, "suffix")) {
+					handler.setPath(getAttribute(e, "value"));
+				} else if (hasStartTagName(e, "formatter")) {
+					// process elements
+					while (rdr.hasNext()) {
+						XMLEvent handlersEvent = rdr.nextEvent();
+						if (handlersEvent.isStartElement()) {
+							if (hasStartTagName(handlersEvent, "pattern-formatter")) {
+								handler.setFormatter(getAttribute(e, "pattern"));
+							}
+						}
+						if (handlersEvent.isEndElement()) {
+							if (hasEndTagName(handlersEvent, "formatter")) {
+								break;
+							}
+						}
+
+					}
+				}
+			}
+
+			if (e.isEndElement()) {
+				if (hasEndTagName(e, "periodic-rotating-file-handler")) {
+					break;
+				}
+			}
+		}
+		// only persist if there is no existing logger with same name
+		if (!profile.getHandlers().contains(handler)) {
+			consoleOutput.append("Imported handler  : " + handler.getName() + "\n");
+			profile.getHandlers().add(handler);
+		}
 	}
 
 	/**

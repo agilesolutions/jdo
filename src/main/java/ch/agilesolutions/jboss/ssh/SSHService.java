@@ -125,12 +125,12 @@ public class SSHService {
 		
 		Session session = null;
 		
-		String privateKey = facesContext.getCurrentInstance().getExternalContext().getRealPath("/rob");
+		String privateKey = facesContext.getCurrentInstance().getExternalContext().getRealPath("/id_rsa");
 
 		try {
 			JSch jsch = new JSch();
 
-			jsch.addIdentity(privateKey, "");
+			jsch.addIdentity(privateKey, "forRob");
 
 
 			session = jsch.getSession("rob", host, 22);

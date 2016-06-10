@@ -1,0 +1,25 @@
+{
+  "formatters": [
+    "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n",
+    "%d{yyyy-MM-dd HH:mm:ss,SSS}| %-5p| [%c]| [%M]| (%t) %s%E%n"
+  ],
+  "levels": [
+    "ERROR",
+    "DEBUG",
+    "INFO"
+  ],
+  "handlertypes": [
+    "periodic-rotating-file-handler",
+    "file-handler",
+    "size-rotating-file-handler"
+  ],
+    "environments": {
+    "DEV": "Development",
+    "LAB": "Laboratory",
+    "SIT": "System Integration Test",
+    "AT": "Assembly Test",
+    "UAT": "User Acceptance Test",
+    "PRD": "Production",
+    "EDU": "Education"
+  }
+}

@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import ch.agilesolutions.jboss.annotations.Attribute;
 import ch.agilesolutions.jboss.annotations.WidgetType;
 
+
 public class Logger {
 	@Expose(serialize = true)
 	private Boolean parent;
@@ -18,65 +19,56 @@ public class Logger {
 	@Expose(serialize = true)
 	private Integer version;
 
-	public Boolean getParent() {
-		return parent;
-	}
-
-	public void setParent(Boolean parent) {
-		this.parent = parent;
-	}
-
-	@Attribute(order = 2, length = 10, required = true, type = WidgetType.INPUT)
-	public String getLogLevel() {
-		return logLevel;
-	}
-
-	public void setLogLevel(String logLevel) {
-		this.logLevel = logLevel;
-	}
-
-	@Attribute(order = 1, length = 30, required = true, type = WidgetType.INPUT)
+	@Attribute(order = 1, length = 30, required=true, type = WidgetType.INPUT)	
 	public String getName() {
 		return name;
 	}
-
-	public void setName(String name) {
-		this.name = name;
+	@Attribute(order = 2, length = 10, required=true, type = WidgetType.INPUT)	
+	public String getLogLevel() {
+		return logLevel;
 	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public Integer getVersion() {
-		return version;
-	}
-
-	public void setVersion(Integer version) {
-		this.version = version;
-	}
-
-	@Attribute(order = 3, length = 25, required = true, type = WidgetType.LIST)
+	@Attribute(order = 3, length = 25, required=true, type = WidgetType.LIST)
 	public String getHandler() {
 		return handler;
 	}
 
+
+	
+	public Boolean getParent() {
+		return parent;
+	}
+	public void setParent(Boolean parent) {
+		this.parent = parent;
+	}
+	public void setLogLevel(String logLevel) {
+		this.logLevel = logLevel;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public Integer getVersion() {
+		return version;
+	}
+	public void setVersion(Integer version) {
+		this.version = version;
+	}
+	
 	public void setHandler(String handler) {
 		this.handler = handler;
-
 	}
-
 	public String getDescription() {
-		return String.format("%s mapped to handler %s", name, handler);
+		return String.format("%s on level  %s", name,logLevel);
 	}
-
 	@Override
 	public String toString() {
 		return this.name;
 	}
 
+	
 }

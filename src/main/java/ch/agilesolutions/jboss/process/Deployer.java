@@ -60,9 +60,9 @@ public class Deployer {
 
 		try {
 
-			sshService.copyArtefact(host, filename, "/var/tmp");
+			sshService.copyArtefact(host, filename, "/var/tmp/"  + artefact.getArtifactId() + ".tar.gz");
 
-			sshService.execCommand(host, "tar zxvf /var/tmp/" + filename);
+			sshService.execCommand(host, "tar -zxvf /var/tmp/" + artefact.getArtifactId() + ".tar.gz");
 
 			returned = sshService.execCommand(host, "/var/tmp/execute.sh");
 

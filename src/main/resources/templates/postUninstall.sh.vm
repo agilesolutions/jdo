@@ -1,8 +1,0 @@
-#!/bin/bash
-echo "!!! Post UN-installation work is here...."
-
-if [ $1 -eq 0 ]; then 
-	/bin/rm -rf /u01/app/admrun/${Prefix}
-	/bin/rm /u01/app/jboss/${Prefix}
-	/bin/rm /u01/app/java/${Prefix}
-fi

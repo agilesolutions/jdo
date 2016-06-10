@@ -124,15 +124,12 @@
 			</p:dialog>
 
 
-			<p:dialog header="Import Existing Configuration"
+			<p:dialog
+				header="Import Existing JBoss Configuration from standalone.xml"
 				widgetVar="importDialog" resizable="false" id="dialogImport"
 				closable="false">
 
 				<h:panelGrid id="displayImport" columns="2" cellpadding="4">
-
-					<f:facet name="header">
-						<h:outputText value="Import existing JBoss Configuration" />
-					</f:facet>
 
 					<p:fileUpload mode="advanced"
 						label="Select JBoss standalone XML file to import"
@@ -140,12 +137,16 @@
 						update="messages,specifyImport,importFeedback"
 						process="specifyImport"
 						fileUploadListener="#{profileController.upload}" />
+
 				</h:panelGrid>
 				<h:panelGrid id="specifyImport" columns="2" cellpadding="4">
 
 					<h:outputText value="Name" />
-					<p:inputText value="#{profileController.profileName}" 
-						size="40" />
+					<p:inputText value="#{profileController.profileName}" size="40"
+						id="profileName">
+						<p:ajax event="change" 
+							listener="#{profileController.updateProfileName}" />
+					</p:inputText>
 
 					<h:outputText value="Domain" />
 
@@ -169,9 +170,9 @@
 							listener="#{profileController.selectHost}" />
 					</p:autoComplete>
 				</h:panelGrid>
-				<h:panelGrid columns="" cellpadding="4">
+				<h:panelGrid columns="1" cellpadding="4">
 
-					<p:inputTextarea rows="36" cols="200" maxlength="800"
+					<p:inputTextarea rows="36" cols="140" maxlength="600"
 						id="importFeedback" counterTemplate="{0} characters remaining."
 						autoResize="false" value="#{profileController.feedback}"
 						readonly="true" />

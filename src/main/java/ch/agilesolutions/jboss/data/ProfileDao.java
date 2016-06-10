@@ -61,7 +61,16 @@ public class ProfileDao {
 
 			String jsonString = gson.toJson((Profile) profile);
 
-			File theDir = new File(PROFILE_DIR + File.separator + profile.getDomain());
+
+			File theDir = new File(PROFILE_DIR);
+
+			// if the directory does not exist, create it
+			if (!theDir.exists()) {
+
+				theDir.mkdir();
+			}
+
+			theDir = new File(PROFILE_DIR + File.separator + profile.getDomain());
 
 			// if the directory does not exist, create it
 			if (!theDir.exists()) {
@@ -90,17 +99,19 @@ public class ProfileDao {
 	}
 
 	public Profile delete(Profile profile) {
+		
+		String fileName = PROFILE_DIR + File.separator + profile.getDomain() + File.separator + profile.getName() + ".json";
 
 		try {
-			File file = new File(PROFILE_DIR + File.separator + profile.getDomain() + File.separator + profile.getName() + ".json");
+			File file = new File(fileName);
 
 			RandomAccessFile raf = new RandomAccessFile(file, "rw");
 			raf.close();
 
 			if (file.delete()) {
-				git.add().addFilepattern(".").call();
+				git.rm().addFilepattern(fileName).call();
 
-				git.commit().setCommitter(gitUser, "jenkins@juliusbaer.com").setMessage(String.format("Profile %s deleted!", profile.getName())).call();
+				git.commit().setCommitter(gitUser, "robert.rong@agile-solutions.com").setMessage(String.format("Profile %s deleted!", profile.getName())).call();
 
 				git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUser, gitPassword)).call();
 			} else {
