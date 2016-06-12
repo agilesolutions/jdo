@@ -33,17 +33,32 @@
 					update="messages,:form:tree" />
 				<p:menuitem value="Add #{profileController.classifier.simpleName}"
 					icon="ui-icon-search" id="addMenu"
-					actionListener="#{profileController.addComponent()}" />
+					onclick="triggerHiddenAddEvent(); return false;"/>
 				<p:menuitem
 					value="Update #{profileController.classifier.simpleName}"
 					icon="ui-icon-arrowrefresh-1-w" id="updateMenu"
-					actionListener="#{profileController.updateComponent}" />
+					onclick="triggerHiddenUpdateEvent(); return false;"/>
 				<p:menuitem value="Delete" icon="ui-icon-close"
 					onclick="PF('confirmation').show();" />
 				<p:separator />
 				<!-- p:menuitem value="Import" icon="/resources/images/import.png"
 					onclick="PF('resourceDialog').show();" /-->
 			</p:contextMenu>
+
+
+			<p:commandButton id="hiddenAddCommand" styleClass="button"
+				action="#{profileController.addComponent()}" style="display:none">
+				<p:ajax event="dialogReturn" update=":form:tree" />
+
+			</p:commandButton>
+
+
+			<p:commandButton id="hiddenUpdateCommand" styleClass="button"
+				action="#{profileController.updateComponent()}" style="display:none">
+				<p:ajax event="dialogReturn" update=":form:tree" />
+
+			</p:commandButton>
+
 
 			<p:contextMenu for="script">
 				<p:menuitem value="Copy to Clipboard" icon="ui-icon-copy"
@@ -144,7 +159,7 @@
 					<h:outputText value="Name" />
 					<p:inputText value="#{profileController.profileName}" size="40"
 						id="profileName">
-						<p:ajax event="change" 
+						<p:ajax event="change"
 							listener="#{profileController.updateProfileName}" />
 					</p:inputText>
 
@@ -238,6 +253,16 @@
 			</p:dialog>
 
 			<p:growl id="messages" showDetail="true" sticky="true" />
+
+
+			<h:outputScript>
+
+      function triggerHiddenAddEvent() {
+        document.getElementById("form:hiddenAddCommand").click();
+      }      function triggerHiddenUpdateEvent() {
+        document.getElementById("form:hiddenUpdateCommand").click();
+      }
+    </h:outputScript>
 		</ui:define>
 
 
