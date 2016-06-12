@@ -109,7 +109,7 @@ public class ProfileDao {
 			raf.close();
 
 			if (file.delete()) {
-				git.rm().addFilepattern(fileName).call();
+				//git.rm().addFilepattern(fileName).call();
 				
 				git.add().setUpdate(true).addFilepattern(".").call();
 
