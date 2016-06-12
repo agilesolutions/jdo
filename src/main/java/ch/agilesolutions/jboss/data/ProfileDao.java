@@ -105,19 +105,21 @@ public class ProfileDao {
 		try {
 			File file = new File(fileName);
 
-			RandomAccessFile raf = new RandomAccessFile(file, "rw");
-			raf.close();
-
-			if (file.delete()) {
+//			RandomAccessFile raf = new RandomAccessFile(file, "rw");
+//			raf.close();
+//
+//			if (file.delete()) {
 				git.rm().addFilepattern(fileName).call();
+				
+				git.add().setUpdate(true).addFilepattern(".").call();
 
 				git.commit().setCommitter(gitUser, "robert.rong@agile-solutions.com").setMessage(String.format("Profile %s deleted!", profile.getName())).call();
 
 				git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUser, gitPassword)).call();
-			} else {
-				throw new IllegalStateException("Delete operation is failed.");
-
-			}
+//			} else {
+//				throw new IllegalStateException("Delete operation is failed.");
+//
+//			}
 
 		} catch (Exception e) {
 			logger.error("Error deleting profile ", e);
