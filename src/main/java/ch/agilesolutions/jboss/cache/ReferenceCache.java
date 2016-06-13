@@ -38,7 +38,7 @@ public class ReferenceCache {
 		});
 		List<Artefact> jdks = nexusDao.listArtefacts("java", "jdk", "", "binaries");
 		
-		eaps.stream().forEach(a-> {
+		jdks.stream().forEach(a-> {
 			machines.add(String.format("%s-%s", a.getArtifactId(),a.getVersion()));
 		});
 	}
