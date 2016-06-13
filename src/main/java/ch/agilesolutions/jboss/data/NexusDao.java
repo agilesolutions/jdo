@@ -73,7 +73,7 @@ public class NexusDao {
 	@SystemProperty("nexus.password")
 	String nexusPassword;
 
-	public List<Artefact> listArtefacts(String groupId, String artefact, String type) {
+	public List<Artefact> listArtefacts(String groupId, String artefact, String type, String repository) {
 
 		try {
 
@@ -82,7 +82,7 @@ public class NexusDao {
 			StringBuilder builder = new StringBuilder();
 			builder.append(nexusUrl);
 
-			builder.append("/service/local/data_index/repositories/releases/content");
+			builder.append(String.format("/service/local/data_index/repositories/%s/content",repository));
 			builder.append("?g=");
 			builder.append(groupId);
 			builder.append("&a=");
@@ -179,7 +179,7 @@ public class NexusDao {
 	 * @throws FileNotFoundException
 	 * @throws Exception
 	 */
-	public InputStream getArtefact(String groupId, String artefact, String version, String type) {
+	public InputStream getArtefact(String groupId, String artefact, String version, String type, String repository) {
 		try {
 
 			HttpClient httpclient = new DefaultHttpClient();
@@ -187,7 +187,7 @@ public class NexusDao {
 			// compose URI for accessing Nexus
 			StringBuilder builder = new StringBuilder();
 			builder.append(nexusUrl);
-			builder.append("/service/local/artifact/maven/redirect?r=releases");
+			builder.append("/service/local/artifact/maven/redirect?r=" + repository);
 			builder.append("&g=");
 			builder.append(groupId);
 			builder.append("&a=");
@@ -426,4 +426,6 @@ public class NexusDao {
 		return ClientBuilder.newBuilder().sslContext(sc).register(new Authenticator(nexusUser, nexusPassword)).build();
 	}
 
+	
+	
 }

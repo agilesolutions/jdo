@@ -53,7 +53,6 @@ public class ImportJSON {
 				
 				profile.setName(server.getName());
 				profile.setHostName(server.getListenAddress());
-				profile.getSocketBindings().put("http", server.getListenPort());
 				
 				
 				

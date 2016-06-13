@@ -21,5 +21,16 @@
     "UAT": "User Acceptance Test",
     "PRD": "Production",
     "EDU": "Education"
-  }
+  },
+  "runtimes": [
+    "eap6.4.0",
+    "eap6.4.4",
+    "eap6.4.5"
+  ],
+  "machines": [
+    "jdk1.7.0:45",
+    "jdk1.7.0:65",
+    "jdk1.8.0:11",
+    "jdk1.8.0:45"
+  ]
 }

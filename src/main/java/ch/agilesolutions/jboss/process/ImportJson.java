@@ -82,7 +82,7 @@ public class ImportJson {
 		profile.setHostName(host);
 
 		server.getSocketBindingGroup().getSocketBinding().stream().forEach(s -> {
-			profile.getSocketBindings().put(s.getName(), s.getPort());
+//			profile.getSocketBindings().put(s.getName(), s.getPort());
 		});
 
 		server.getProfile().getSubsystem().stream().forEach(s -> {
@@ -152,7 +152,7 @@ public class ImportJson {
 			profile.setName(String.format("%s-%s", domainName, server.getName()));
 			profile.setDescription(server.getName());
 			profile.setHostName(host);
-			profile.getSocketBindings().put("http", server.getListenPort());
+//			profile.getSocketBindings().put("http", server.getListenPort());
 
 			Logger logger = new Logger();
 			logger.setId(1);

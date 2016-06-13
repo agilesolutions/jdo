@@ -29,9 +29,7 @@ import ch.agilesolutions.jboss.ssh.SSHService;
 /**
  * https://www.javacodegeeks.com/2014/07/java-ee-concurrency-api-tutorial.html
  * 
- * <dependency> <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
- * <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
- * <version>1.0.0.Final</version> </dependency>
+ * <dependency> <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId> <artifactId>jboss-concurrency-api_1.0_spec</artifactId> <version>1.0.0.Final</version> </dependency>
  */
 @Stateless
 public class Deployer {
@@ -60,7 +58,7 @@ public class Deployer {
 
 		try {
 
-			sshService.copyArtefact(host, filename, "/var/tmp/"  + artefact.getArtifactId() + ".tar.gz");
+			sshService.copyArtefact(host, filename, "/var/tmp/" + artefact.getArtifactId() + ".tar.gz");
 
 			sshService.execCommand(host, "tar -zxvf /var/tmp/" + artefact.getArtifactId() + ".tar.gz");
 
@@ -85,8 +83,7 @@ public class Deployer {
 
 		DeploymentTaskRequest request = new DeploymentTaskRequest(host, profile, artefact);
 
-		ScheduledFuture<String> futureResult = executor.schedule(new DeploymentTask(request), seconds,
-				TimeUnit.SECONDS);
+		ScheduledFuture<String> futureResult = executor.schedule(new DeploymentTask(request), seconds, TimeUnit.SECONDS);
 
 		return "done";
 
@@ -105,13 +102,11 @@ public class Deployer {
 			theDir.mkdir();
 		}
 
-		InputStream inputStream = nexusDao.getDeployment(artefact.getGroupId(), artefact.getArtifactId(),
-				artefact.getVersion(), artefact.getPackaging());
+		InputStream inputStream = nexusDao.getDeployment(artefact.getGroupId(), artefact.getArtifactId(), artefact.getVersion(), artefact.getPackaging());
 
 		FileOutputStream fos = null;
 
-		String fileName = STAGING_DIR + File.separator + artefact.getArtifactId() + File.separator
-				+ artefact.getArtifactId() + "." + artefact.getPackaging();
+		String fileName = STAGING_DIR + File.separator + artefact.getArtifactId() + File.separator + artefact.getArtifactId() + "." + artefact.getPackaging();
 
 		if (inputStream != null) {
 			try {
@@ -154,6 +149,47 @@ public class Deployer {
 		gregorianCalendar.setTime(date);
 		ZonedDateTime zonedDateTime = gregorianCalendar.toZonedDateTime();
 		return zonedDateTime.toLocalDateTime();
+
+	}
+
+	private void downloadBinary(Profile profile, String group, String artefact, String version) {
+
+		InputStream inputStream = nexusDao.getArtefact(group, artefact, version, "zip", "binaries");
+
+		FileOutputStream fos = null;
+
+		String fileName = STAGING_DIR + File.separator + profile.getName() + File.separator + artefact + "-" + version;
+
+		if (inputStream != null) {
+			try {
+				fos = new FileOutputStream(fileName);
+				byte[] tmp = new byte[4096];
+				int l;
+
+				while ((l = inputStream.read(tmp)) != -1) {
+					fos.write(tmp, 0, l);
+				}
+				fos.flush();
+
+				if (fos != null) {
+					fos.close();
+				}
+			} catch (Exception e) {
+				logger.error("Error retrieving artefact from NEXUS", e.getMessage());
+				throw new IllegalStateException(e);
+			} finally {
+				try {
+					inputStream.close();
+					if (fos != null) {
+						fos.close();
+					}
+
+				} catch (IOException e) {
+					logger.error("Error retrieving artefact from NEXUS", e.getMessage());
+					throw new IllegalStateException(e);
+				}
+			}
+		}
 
 	}
 

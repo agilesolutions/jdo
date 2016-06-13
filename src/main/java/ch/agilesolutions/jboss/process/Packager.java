@@ -165,7 +165,7 @@ public class Packager {
 
 		profile.getDeployments().stream().forEach(d -> {
 			InputStream inputStream = nexusDao.getArtefact(d.getGroupIdentification(), d.getArtifact(), d.getVersion(),
-					d.getType());
+					d.getType(), "releases");
 
 			FileOutputStream fos = null;
 

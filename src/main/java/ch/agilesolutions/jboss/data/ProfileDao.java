@@ -5,10 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -109,7 +107,6 @@ public class ProfileDao {
 			raf.close();
 
 			if (file.delete()) {
-				//git.rm().addFilepattern(fileName).call();
 				
 				git.add().setUpdate(true).addFilepattern(".").call();
 
@@ -127,8 +124,9 @@ public class ProfileDao {
 		}
 
 		return profile;
-
 	}
+
+	
 
 	/**
 	 * 

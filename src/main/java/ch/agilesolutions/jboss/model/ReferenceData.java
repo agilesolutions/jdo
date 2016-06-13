@@ -21,6 +21,12 @@ public class ReferenceData {
 	
 	@Expose(serialize = true)
 	private Map<String,String> environments = new HashMap<>();
+	
+	@Expose(serialize = true)
+	private List<String> runtimes = new ArrayList<>();
+	
+	@Expose(serialize = true)
+	private List<String> machines = new ArrayList<>();
 
 	public List<String> getFormatters() {
 		return formatters;
@@ -37,5 +43,23 @@ public class ReferenceData {
 	public List<String> getHandlertypes() {
 		return handlertypes;
 	}
+
+	public List<String> getRuntimes() {
+		return runtimes;
+	}
+
+	public void setRuntimes(List<String> runtimes) {
+		this.runtimes = runtimes;
+	}
+
+	public List<String> getMachines() {
+		return machines;
+	}
+
+	public void setMachines(List<String> machines) {
+		this.machines = machines;
+	}
+	
+	
 	
 }

@@ -40,8 +40,8 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.NodeSelectEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
-import org.primefaces.model.UploadedFile;
 
+import ch.agilesolutions.jboss.cache.ReferenceCache;
 import ch.agilesolutions.jboss.data.DomainDao;
 import ch.agilesolutions.jboss.data.GitDao;
 import ch.agilesolutions.jboss.data.HpsmDao;
@@ -113,6 +113,9 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	@Inject
 	private Deployer deployer;
+	
+	@Inject
+	private ReferenceCache referenceCache;
 
 	private List<Profile> profiles;
 
@@ -128,6 +131,8 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	private String domain = "all";
 
+	private String domainName = "all";
+
 	private String profileName = "";
 
 	private String host = "";
@@ -136,7 +141,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	private ReferenceData referenceData = new ReferenceData();
 
-	private String title;
+	private String title = "";
 
 	private String script;
 
@@ -180,8 +185,7 @@ public class ProfileController extends AbstractController implements Serializabl
 			referenceData = referenceDataDao.get();
 
 		} catch (Exception e) {
-			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while populating profile view...",
-					e, false);
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while populating profile view...", e, false);
 		}
 		submitMessage(FacesMessage.SEVERITY_INFO, profiles.size() + " record(s) retrieved...", true);
 	}
@@ -268,20 +272,16 @@ public class ProfileController extends AbstractController implements Serializabl
 			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Selected profile ", profile.getName());
 		} else if (classifierInstance instanceof Tree) {
 			classifier = ((Tree) classifierInstance).getClassifier();
-			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Selected component ",
-					classifierInstance.getClass().getSimpleName());
 		} else if (classifierInstance instanceof Deployment) {
 			deployment = (Deployment) classifierInstance;
 			classifierInstance = event.getTreeNode().getData();
 			profile = (Profile) event.getTreeNode().getParent().getParent().getData();
-			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Selected " + classifier.getSimpleName(),
-					classifierInstance.toString());
+			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Selected " + classifier.getSimpleName(), classifierInstance.toString());
 		} else {
 
 			classifierInstance = event.getTreeNode().getData();
 			profile = (Profile) event.getTreeNode().getParent().getParent().getData();
-			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Selected " + classifier.getSimpleName(),
-					classifierInstance.toString());
+			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Selected " + classifier.getSimpleName(), classifierInstance.toString());
 
 		}
 
@@ -308,8 +308,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 				list.remove(classifierInstance);
 
-				this.profile = profileDao.save(this.profile,
-						String.format("Profile %s removed from GIT", profile.getName()));
+				this.profile = profileDao.save(this.profile, String.format("Profile %s removed from GIT", profile.getName()));
 
 			}
 
@@ -393,8 +392,7 @@ public class ProfileController extends AbstractController implements Serializabl
 	/**
 	 * 
 	 * 
-	 * http://stackoverflow.com/questions/8509270/programmatically-getting-
-	 * uicomponents-of-a-jsf-view-in-beans-constructor
+	 * http://stackoverflow.com/questions/8509270/programmatically-getting- uicomponents-of-a-jsf-view-in-beans-constructor
 	 * 
 	 * preRenderComponent preRenderView postAddToView preValidate postValidate
 	 */
@@ -414,63 +412,54 @@ public class ProfileController extends AbstractController implements Serializabl
 			component.getChildren().add(label);
 
 			switch (Reflect.getType(m)) {
-			case INPUT:
-				UIComponent ip = new UIInput();
-				ip.getAttributes().put("size", Reflect.getLength(m));
-				ip.getAttributes().put("required", Reflect.isRequired(m));
-				ip.setValueExpression("value", createValueExpression(
-						String.format("#{profileController.classifierInstance.%s}", name), String.class));
-				component.getChildren().add(ip);
-				break;
-			case OUTPUT:
-				UIComponent op = new UIInput();
-				op.getAttributes().put("size", Reflect.getLength(m));
-				op.setValueExpression("value", createValueExpression(
-						String.format("#{profileController.classifierInstance.%s}", name), String.class));
-				component.getChildren().add(op);
-				break;
-			case LIST:
-				SelectOneMenu ls = new SelectOneMenu();
-				ls.setValueExpression("value", createValueExpression(
-						String.format("#{profileController.classifierInstance.%s}", name), String.class));
-				UISelectItems items = new UISelectItems();
-				items.setValueExpression("value",
-						createValueExpression(String.format("#{profileController.%ss}", name), List.class));
-				;
-				ls.getChildren().add(items);
+				case INPUT:
+					UIComponent ip = new UIInput();
+					ip.getAttributes().put("size", Reflect.getLength(m));
+					ip.getAttributes().put("required", Reflect.isRequired(m));
+					ip.setValueExpression("value", createValueExpression(String.format("#{profileController.classifierInstance.%s}", name), String.class));
+					component.getChildren().add(ip);
+					break;
+				case OUTPUT:
+					UIComponent op = new UIInput();
+					op.getAttributes().put("size", Reflect.getLength(m));
+					op.setValueExpression("value", createValueExpression(String.format("#{profileController.classifierInstance.%s}", name), String.class));
+					component.getChildren().add(op);
+					break;
+				case LIST:
+					SelectOneMenu ls = new SelectOneMenu();
+					ls.setValueExpression("value", createValueExpression(String.format("#{profileController.classifierInstance.%s}", name), String.class));
+					UISelectItems items = new UISelectItems();
+					items.setValueExpression("value", createValueExpression(String.format("#{profileController.%ss}", name), List.class));
+					;
+					ls.getChildren().add(items);
 
-				component.getChildren().add(ls);
-				break;
-			case AUTOCOMPLETE:
-				AutoComplete ac = new AutoComplete();
-				ac.setValueExpression("value", createValueExpression(
-						String.format("#{profileController.classifierInstance.%s}", name), String.class));
-				// http://forum.primefaces.org/viewtopic.php?f=3&t=19348
-				MethodExpression completeMethod = createMethodExpression(
-						String.format("#{profileController.complete%s}", m.getName().substring(3)), List.class,
-						String.class);
-				ac.setCompleteMethod(completeMethod);
-				ac.setAutocomplete("on");
+					component.getChildren().add(ls);
+					break;
+				case AUTOCOMPLETE:
+					AutoComplete ac = new AutoComplete();
+					ac.setValueExpression("value", createValueExpression(String.format("#{profileController.classifierInstance.%s}", name), String.class));
+					// http://forum.primefaces.org/viewtopic.php?f=3&t=19348
+					MethodExpression completeMethod = createMethodExpression(String.format("#{profileController.complete%s}", m.getName().substring(3)), List.class, String.class);
+					ac.setCompleteMethod(completeMethod);
+					ac.setAutocomplete("on");
 
-				component.getChildren().add(ac);
-				break;
-			case PASSWORD:
-				UIInput pw = new HtmlInputSecret();
-				pw.setConverter(new PasswordConverter());
-				pw.setValueExpression("value", createValueExpression(
-						String.format("#{profileController.classifierInstance.%s}", name), String.class));
+					component.getChildren().add(ac);
+					break;
+				case PASSWORD:
+					UIInput pw = new HtmlInputSecret();
+					pw.setConverter(new PasswordConverter());
+					pw.setValueExpression("value", createValueExpression(String.format("#{profileController.classifierInstance.%s}", name), String.class));
 
-				component.getChildren().add(pw);
-				break;
-			case CHECKBOX:
-				SelectBooleanCheckbox chk = new SelectBooleanCheckbox();
-				chk.getAttributes().put("size", Reflect.getLength(m));
-				chk.setValueExpression("value", createValueExpression(
-						String.format("#{profileController.classifierInstance.%s}", name), String.class));
-				component.getChildren().add(chk);
-				break;
-			default:
-				break;
+					component.getChildren().add(pw);
+					break;
+				case CHECKBOX:
+					SelectBooleanCheckbox chk = new SelectBooleanCheckbox();
+					chk.getAttributes().put("size", Reflect.getLength(m));
+					chk.setValueExpression("value", createValueExpression(String.format("#{profileController.classifierInstance.%s}", name), String.class));
+					component.getChildren().add(chk);
+					break;
+				default:
+					break;
 			}
 
 		});
@@ -556,8 +545,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 			}
 
-			this.profile = profileDao.save(this.profile,
-					String.format("Deployment updated on profile %s", profile.getName()));
+			this.profile = profileDao.save(this.profile, String.format("Deployment updated on profile %s", profile.getName()));
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -576,11 +564,9 @@ public class ProfileController extends AbstractController implements Serializabl
 		clearMessages();
 		try {
 			profileDao.delete(this.profile);
-			submitMessage(FacesMessage.SEVERITY_INFO, this.profile.getDescription() + " removed from the database...",
-					true);
+			submitMessage(FacesMessage.SEVERITY_INFO, this.profile.getDescription() + " removed from the database...", true);
 		} catch (Exception e) {
-			submitMessage(FacesMessage.SEVERITY_ERROR,
-					"Failure : Exception occured while removing profile from database...", e, false);
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while removing profile from database...", e, false);
 		}
 		// refresh table
 		refreshProfiles();
@@ -601,8 +587,7 @@ public class ProfileController extends AbstractController implements Serializabl
 			root = createTree(profiles);
 
 		} catch (Exception e) {
-			submitMessage(FacesMessage.SEVERITY_ERROR,
-					"Failure : Exception occured while refreshing profiles from database...", e, false);
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while refreshing profiles from database...", e, false);
 		}
 	}
 
@@ -623,8 +608,7 @@ public class ProfileController extends AbstractController implements Serializabl
 			FacesContext.getCurrentInstance().addMessage(null, message);
 
 		} catch (Exception e) {
-			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while updating domain...", e,
-					false);
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while updating domain...", e, false);
 		}
 
 	}
@@ -641,36 +625,26 @@ public class ProfileController extends AbstractController implements Serializabl
 
 			domainDao.save(domains);
 
-			message = new FacesMessage(FacesMessage.SEVERITY_INFO, String.format("Domain %s saved", domain), domain);
+			message = new FacesMessage(FacesMessage.SEVERITY_INFO, String.format("Domain %s removed", domain), domain);
 
 			FacesContext.getCurrentInstance().addMessage(null, message);
 
 		} catch (Exception e) {
-			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while removing domain...", e,
-					false);
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while removing domain...", e, false);
 		}
 
 	}
 
 	public List<String> getEnvironments() {
-
-		List<String> environments = new ArrayList<>();
-
-		for (Environment environment : Environment.values()) {
-			environments.add(environment.toString());
-		}
-
-		return environments;
+		return referenceData.getEnvironments().entrySet().stream().map(Map.Entry::getKey).collect(Collectors.toList());
 	}
 
 	public List<String> getJbosss() {
-
-		return gitDao.getJBossBinaries();
+		return referenceCache.getRuntimes();
 	}
 
 	public List<String> getJdks() {
-
-		return gitDao.getJDKBinaries();
+		return referenceCache.getMachines();
 	}
 
 	public String getScript() {
@@ -685,8 +659,7 @@ public class ProfileController extends AbstractController implements Serializabl
 			try {
 				script = templateProcessor.renderTemplate(profile);
 			} catch (Exception e) {
-				script = String.format("Failure : Exception occured while generating CLI batch script : %s",
-						e.getMessage());
+				script = String.format("Failure : Exception occured while generating CLI batch script : %s", e.getMessage());
 			}
 		} else {
 			script = "no profile selected for generation!";
@@ -708,8 +681,7 @@ public class ProfileController extends AbstractController implements Serializabl
 				return;
 			}
 		}
-		submitMessage(FacesMessage.SEVERITY_WARN, "Environment ID does not exist!\nPlease specify a valid Environment",
-				false);
+		submitMessage(FacesMessage.SEVERITY_WARN, "Environment ID does not exist!\nPlease specify a valid Environment", false);
 		((UIInput) toValidate).setValid(false);
 
 	}
@@ -758,8 +730,7 @@ public class ProfileController extends AbstractController implements Serializabl
 			root = createTree(profiles);
 
 		} catch (Exception e) {
-			submitMessage(FacesMessage.SEVERITY_ERROR,
-					"Failure : Exception occured while refreshing profiles from database...", e, false);
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while refreshing profiles from database...", e, false);
 		}
 
 	}
@@ -772,7 +743,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	public void selectDomainName(final AjaxBehaviorEvent event) {
 
-		domain = (String) event.getComponent().getAttributes().get("value");
+		domainName = (String) event.getComponent().getAttributes().get("value");
 
 	}
 
@@ -782,6 +753,14 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	public void setDomains(Domains domains) {
 		this.domains = domains;
+	}
+
+	public String getDomainName() {
+		return domainName;
+	}
+
+	public void setDomainName(String domainName) {
+		this.domainName = domainName;
 	}
 
 	public List<String> completeDomain(String query) {
@@ -866,18 +845,15 @@ public class ProfileController extends AbstractController implements Serializabl
 	// -----------------------------------------------------------------------------------
 	private ValueExpression createValueExpression(String valueExpression, Class<?> valueType) {
 		FacesContext facesContext = FacesContext.getCurrentInstance();
-		return facesContext.getApplication().getExpressionFactory().createValueExpression(facesContext.getELContext(),
-				valueExpression, valueType);
+		return facesContext.getApplication().getExpressionFactory().createValueExpression(facesContext.getELContext(), valueExpression, valueType);
 	}
 
-	private static MethodExpression createMethodExpression(String valueExpression, Class<?> expectedReturnType,
-			Class<?>... parameterTypes) {
+	private static MethodExpression createMethodExpression(String valueExpression, Class<?> expectedReturnType, Class<?>... parameterTypes) {
 		MethodExpression methodExpression = null;
 		try {
 			FacesContext fc = FacesContext.getCurrentInstance();
 			ExpressionFactory factory = fc.getApplication().getExpressionFactory();
-			methodExpression = factory.createMethodExpression(fc.getELContext(), valueExpression, expectedReturnType,
-					parameterTypes);
+			methodExpression = factory.createMethodExpression(fc.getELContext(), valueExpression, expectedReturnType, parameterTypes);
 		} catch (Exception e) {
 			throw new FacesException("Method expression '" + valueExpression + "' could not be created.");
 		}
@@ -909,14 +885,13 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		try {
 
-			feedback = importXML.importProfile(event.getFile().getInputstream(), profileName, domain, host);
+			feedback = importXML.importProfile(event.getFile().getInputstream(), profileName, domainName, host);
 
 		} catch (Exception e) {
 			submitMessage(FacesMessage.SEVERITY_WARN, "Error occurred during JSON upload...", e, false);
 		}
 
-		submitMessage(FacesMessage.SEVERITY_INFO, String.format("Profile %s created through import", profileName),
-				true);
+		submitMessage(FacesMessage.SEVERITY_INFO, String.format("Profile %s created through import", profileName), true);
 
 	}
 
@@ -1108,12 +1083,10 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		this.artefacts.clear();
 		try {
-			artefacts = nexusDao.listArtefacts(deployment.getGroupIdentification(), deployment.getArtifact(),
-					deployment.getType());
+			artefacts = nexusDao.listArtefacts(deployment.getGroupIdentification(), deployment.getArtifact(), deployment.getType(), "releases");
 
 		} catch (Exception e) {
-			submitMessage(FacesMessage.SEVERITY_ERROR,
-					"Failure : Exception occured while retrieving all deployments from Nexus repository...", e, false);
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while retrieving all deployments from Nexus repository...", e, false);
 		}
 
 		submitMessage(FacesMessage.SEVERITY_INFO, String.format("%s artefacts found on NEXUS", artefacts.size()), true);
@@ -1127,8 +1100,7 @@ public class ProfileController extends AbstractController implements Serializabl
 			artefacts = nexusDao.listPackages(deployment);
 
 		} catch (Exception e) {
-			submitMessage(FacesMessage.SEVERITY_ERROR,
-					"Failure : Exception occured while retrieving all deployments from Nexus repository...", e, false);
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while retrieving all deployments from Nexus repository...", e, false);
 		}
 
 		submitMessage(FacesMessage.SEVERITY_INFO, String.format("%s artefacts found on NEXUS", artefacts.size()), true);
@@ -1140,12 +1112,10 @@ public class ProfileController extends AbstractController implements Serializabl
 		try {
 			deploymentStatus = deployer.deploy(host, profile, selectedPackage);
 
-			submitMessage(FacesMessage.SEVERITY_INFO,
-					String.format("Packaged %s submitted for deployment", selectedPackage.getArtifactId()), true);
+			submitMessage(FacesMessage.SEVERITY_INFO, String.format("Packaged %s submitted for deployment", selectedPackage.getArtifactId()), true);
 
 		} catch (Exception e) {
-			submitMessage(FacesMessage.SEVERITY_ERROR,
-					String.format("Failure : Exception occured accesing NEXUS: %s", e.getCause().getMessage()), true);
+			submitMessage(FacesMessage.SEVERITY_ERROR, String.format("Failure : Exception occured accesing NEXUS: %s", e.getCause().getMessage()), true);
 		}
 		// InputStream stream =
 		// FacesContext.getCurrentInstance().getExternalContext().getResourceAsStream("/dummyresponse.txt");
@@ -1169,8 +1139,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		deployer.schedule(host, profile, selectedPackage, submitDate);
 
-		submitMessage(FacesMessage.SEVERITY_INFO,
-				String.format("Packaged %s scheduled for deployment", selectedPackage.getArtifactId()), true);
+		submitMessage(FacesMessage.SEVERITY_INFO, String.format("Packaged %s scheduled for deployment", selectedPackage.getArtifactId()), true);
 
 	}
 
@@ -1186,8 +1155,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		profile.getDeployments().add(deployment);
 
-		profileDao.save(profile,
-				String.format("Deployment %s added to profile %s", deployment.getArtifact(), profile.getName()));
+		profileDao.save(profile, String.format("Deployment %s added to profile %s", deployment.getArtifact(), profile.getName()));
 
 	}
 
@@ -1226,8 +1194,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		String response = packager.generate(profile);
 
-		submitMessage(FacesMessage.SEVERITY_INFO,
-				String.format("RPM package created and published to NEXUS with status %s", response), true);
+		submitMessage(FacesMessage.SEVERITY_INFO, String.format("RPM package created and published to NEXUS with status %s", response), true);
 
 	}
 

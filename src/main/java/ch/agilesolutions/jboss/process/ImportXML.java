@@ -27,6 +27,7 @@ import ch.agilesolutions.jboss.model.Driver;
 import ch.agilesolutions.jboss.model.Environment;
 import ch.agilesolutions.jboss.model.Handler;
 import ch.agilesolutions.jboss.model.Profile;
+import ch.agilesolutions.jboss.model.SocketBinding;
 import ch.agilesolutions.jboss.model.SystemProperty;
 
 @Stateless
@@ -80,6 +81,8 @@ public class ImportXML {
 							processLogger(profile, eventReader, event, consoleOutput);
 						} else if (hasStartTagName(event, "periodic-rotating-file-handler")) {
 							processHandler(profile, eventReader, event, consoleOutput);
+						} else if (hasStartTagName(event, "socket-binding-group")) {
+							processSocketBindings(profile, eventReader, event, consoleOutput);
 						}
 					}
 				}
@@ -415,6 +418,47 @@ public class ImportXML {
 		if (!profile.getHandlers().contains(handler)) {
 			consoleOutput.append("Imported handler  : " + handler.getName() + "\n");
 			profile.getHandlers().add(handler);
+		}
+	}
+	/**
+	 * 
+	 * Parse datasource elements.
+	 * 
+	 * @param rdr
+	 *            event stream.
+	 * @param event
+	 *            on start XML element for datasource.
+	 * @throws Exception
+	 *             any STAX exception occurred.
+	 */
+	private void processSocketBindings(Profile profile, XMLEventReader rdr, XMLEvent event, StringBuilder consoleOutput) throws Exception {
+
+		SocketBinding bindings = new SocketBinding();
+		profile.getSocketBindings().add(bindings);
+
+		bindings.setPortOffset("0");
+		bindings.setAjp("8009");
+		bindings.setHttp("8080");
+		bindings.setHttps("8443");
+		bindings.setManagementHttp("9990");
+		bindings.setManagementHttps("9993");
+		bindings.setRemoting("4447");
+
+		while (rdr.hasNext()) {
+			XMLEvent e = rdr.nextEvent();
+
+			if (e.isStartElement()) {
+				// process attributes
+//				if (hasStartTagName(e, "file")) {
+//					handler.setPath(getAttribute(e, "path"));
+//				}
+			}
+
+			if (e.isEndElement()) {
+				if (hasEndTagName(e, "socket-binding-group")) {
+					break;
+				}
+			}
 		}
 	}
 

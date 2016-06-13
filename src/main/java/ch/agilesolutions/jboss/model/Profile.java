@@ -71,7 +71,7 @@ public class Profile {
 	@Expose(serialize = true)
 	private List<Argument> arguments = new ArrayList<>();
 	@Expose(serialize = true)
-	private Map<String, Integer> socketBindings = new HashMap<>();
+	private List<SocketBinding> socketBindings = new ArrayList<>();
 	@Expose(serialize = true)
 	private List<Driver> drivers = new ArrayList<>();
 
@@ -79,15 +79,37 @@ public class Profile {
 	public String getName() {
 		return name;
 	}
-
-	public void setName(String name) {
-		this.name = name;
+	@Attribute(order = 2, length = 90, required=true, type = WidgetType.INPUT)
+	public String getDescription() {
+		return description;
 	}
-
-	
+	@Attribute(order = 3, length = 40, required=true, type = WidgetType.AUTOCOMPLETE)
+	public String getDomain() {
+		return domain;
+	}
+	@Attribute(order = 4, length = 30, required=true, type = WidgetType.LIST)
+	public String getEnvironment() {
+		return environment;
+	}
 	@Attribute(order = 5, length = 70, required=true, type = WidgetType.AUTOCOMPLETE)
 	public String getHostName() {
 		return hostName;
+	}
+	@Attribute(order = 6, length = 30, required=true, type = WidgetType.AUTOCOMPLETE)
+	public String getJiraKey() {
+		return jiraKey;
+	}
+	@Attribute(order = 7, length = 60, required=true, type = WidgetType.LIST)
+	public String getJdk() {
+		return jdk;
+	}
+	@Attribute(order = 8, length = 60, required=true, type = WidgetType.LIST)
+	public String getJboss() {
+		return jboss;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public void setHostName(String hostName) {
@@ -100,11 +122,6 @@ public class Profile {
 
 	public void setReleaseTag(String releaseTag) {
 		this.releaseTag = releaseTag;
-	}
-
-	@Attribute(order = 3, length = 40, required=true, type = WidgetType.AUTOCOMPLETE)
-	public String getDomain() {
-		return domain;
 	}
 
 	public void setDomain(String domain) {
@@ -128,29 +145,12 @@ public class Profile {
 		this.prefix = prefix;
 	}
 
-	
-	
-	@Attribute(order = 8, length = 60, required=true, type = WidgetType.LIST)
-	public String getJboss() {
-		return jboss;
-	}
-
 	public void setJboss(String jboss) {
 		this.jboss = jboss;
 	}
 
-	@Attribute(order = 7, length = 60, required=true, type = WidgetType.LIST)
-	public String getJdk() {
-		return jdk;
-	}
-
 	public void setJdk(String jdk) {
 		this.jdk = jdk;
-	}
-
-	@Attribute(order = 2, length = 90, required=true, type = WidgetType.INPUT)
-	public String getDescription() {
-		return description;
 	}
 
 	public void setDescription(String description) {
@@ -214,11 +214,6 @@ public class Profile {
 		this.customCli = customCli;
 	}
 
-	@Attribute(order = 6, length = 30, required=true, type = WidgetType.AUTOCOMPLETE)
-	public String getJiraKey() {
-		return jiraKey;
-	}
-
 	public void setJiraKey(String jiraKey) {
 		this.jiraKey = jiraKey;
 	}
@@ -254,11 +249,6 @@ public class Profile {
 
 	public void setComponent(String component) {
 		this.component = component;
-	}
-
-	@Attribute(order = 4, length = 30, required=true, type = WidgetType.LIST)
-	public String getEnvironment() {
-		return environment;
 	}
 
 	public void setEnvironment(String environment) {
@@ -317,18 +307,22 @@ public class Profile {
 		this.arguments = arguments;
 	}
 
-	public Map<String, Integer> getSocketBindings() {
+
+	@Component(order=8)
+	public List<SocketBinding> getSocketBindings() {
 		return socketBindings;
 	}
 
-	public void setSocketBindings(Map<String, Integer> socketBindings) {
+	public void setSocketBindings(List<SocketBinding> socketBindings) {
 		this.socketBindings = socketBindings;
 	}
 
+	
 	@Component(order=3)
 	public List<Driver> getDrivers() {
 		return drivers;
 	}
+
 
 	public void setDrivers(List<Driver> drivers) {
 		this.drivers = drivers;
