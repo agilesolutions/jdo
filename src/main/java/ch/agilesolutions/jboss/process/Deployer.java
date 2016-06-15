@@ -36,7 +36,8 @@ public class Deployer {
 
 	private static final String STAGING_DIR = System.getProperty("jboss.server.data.dir") + "/staging";
 
-	private static final String SERVER_ROOT = "/opt";
+	//private static final String SERVER_ROOT = "/opt/jdo";
+	private static final String SERVER_ROOT = "/u01/data/admrun/jdo";
 
 	@Inject
 	NexusDao nexusDao;
@@ -52,23 +53,41 @@ public class Deployer {
 
 	public String deploy(String host, Profile profile, Artefact artefact) {
 
-		String filename = downloadArtefacts(artefact, profile);
+		String filename = "";
 
-		String returned = "";
+		StringBuilder returned = new StringBuilder();
 
 		try {
 
-			sshService.copyArtefact(host, filename, "/var/tmp/" + artefact.getArtifactId() + ".tar.gz");
+			filename = downloadBinary(profile, "java", profile.getJdk().split("-")[0], profile.getJdk().split("-")[1]);
 
-			sshService.execCommand(host, "tar -zxvf /var/tmp/" + artefact.getArtifactId() + ".tar.gz");
+			returned.append(sshService.execCommand(host, String.format("mkdir -p %s", SERVER_ROOT)));
 
-			returned = sshService.execCommand(host, "/var/tmp/execute.sh");
+			returned.append(sshService.execCommand(host, String.format("mkdir -p %s/java", SERVER_ROOT)));
+
+			returned.append(sshService.copyArtefact(host, filename, String.format("%s/java/%s.zip", SERVER_ROOT, profile.getJdk())));
+
+			filename = downloadBinary(profile, "jboss", profile.getJboss().split("-")[0], profile.getJboss().split("-")[1]);
+
+			returned.append(sshService.execCommand(host, String.format("mkdir -p %s/jboss", SERVER_ROOT)));
+
+			returned.append(sshService.copyArtefact(host, filename, String.format("%s/jboss/%s.zip", SERVER_ROOT, profile.getJdk())));
+
+			filename = downloadArtefacts(artefact, profile);
+
+			returned.append(sshService.execCommand(host, String.format("mkdir -p %s/staging", SERVER_ROOT)));
+
+			returned.append(sshService.copyArtefact(host, filename, String.format("%s/staging/%s.tar.gz", SERVER_ROOT, artefact.getArtifactId())));
+
+			returned.append(sshService.execCommand(host, String.format("cd %s/staging;tar -zxvf %s.tar.gz", SERVER_ROOT, artefact.getArtifactId())));
+
+			returned.append(sshService.execCommand(host, String.format("cd %s/staging;chmod 775 execute.sh;./execute.sh", SERVER_ROOT)));
 
 		} catch (Exception e) {
-			returned = String.format("Error copying or executing through SSH %s", e.getMessage());
+			returned.append(String.format("Error copying or executing through SSH %s", e.getMessage()));
 			logger.error("Error copying or executing through SSH ", e);
 		}
-		return returned;
+		return returned.toString();
 
 	}
 
@@ -152,13 +171,13 @@ public class Deployer {
 
 	}
 
-	private void downloadBinary(Profile profile, String group, String artefact, String version) {
+	private String downloadBinary(Profile profile, String group, String artefact, String version) {
 
 		InputStream inputStream = nexusDao.getArtefact(group, artefact, version, "zip", "binaries");
 
 		FileOutputStream fos = null;
 
-		String fileName = STAGING_DIR + File.separator + profile.getName() + File.separator + artefact + "-" + version;
+		String fileName = STAGING_DIR + File.separator + profile.getName() + File.separator + artefact + "-" + version + ".zip";
 
 		if (inputStream != null) {
 			try {
@@ -190,6 +209,8 @@ public class Deployer {
 				}
 			}
 		}
+
+		return fileName;
 
 	}
 

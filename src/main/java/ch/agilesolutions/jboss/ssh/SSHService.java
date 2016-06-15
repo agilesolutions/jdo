@@ -29,7 +29,7 @@ public class SSHService {
 	@Inject
 	SSHConnection connection;
 
-	public void copyArtefact(String host, String sourceFileName, String targetFileName)  {
+	public String copyArtefact(String host, String sourceFileName, String targetFileName)  {
 		Session session = createSSHConnection(host);
 		ChannelSftp channel = null;
 
@@ -47,14 +47,13 @@ public class SSHService {
 			channel.disconnect();
 
 		} catch (SftpException e) {
-			logger.error("SSHService: error during sftp copy ", e);
 			e.printStackTrace();
-			throw new IllegalStateException(e);
+			return e.getMessage();
 		} catch (JSchException e) {
-			logger.error("SSHService: error during sftp copy ", e);
 			e.printStackTrace();
-			throw new IllegalStateException(e);
+			return e.getMessage();
 		}
+		return String.format("file %s copied to %s", targetFileName,host);
 	}
 
 	public String execCommand(String host, String command)  {
@@ -101,20 +100,18 @@ public class SSHService {
 					Thread.sleep(1000);
 				} catch (Exception ee) {
 					logger.error(ee.getMessage());
-					throw new Exception(ee);
+					return out.toString();
 
 				}
 			}
 
 			channel.disconnect();
 
-			return out.toString();
-
 		} catch (Exception e) {
-			logger.error("SSHService: error during sftp copy ", e);
 			e.printStackTrace();
-			throw new IllegalStateException(e);
+			return e.getMessage();
 		}
+		return out.toString();
 	}
 	/**
 	 * http://stackoverflow.com/questions/4932005/can-we-use-jsch-for-ssh-key-based-communication
