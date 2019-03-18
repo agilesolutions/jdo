@@ -1,5 +1,7 @@
 package ch.agilesolutions.jboss.process;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -7,8 +9,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.function.Predicate;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -57,11 +63,19 @@ public class Packager {
 
 	public String generate(Profile profile) {
 
-		templateDao.pullTemplates();
+		String returnStatus = "none";
+
+		templateDao.pullTemplates(profile.getGitBranch());
 
 		renderFiles(profile);
 
 		downloadArtefacts(profile);
+
+		try {
+			downloadConfig(profile);
+		} catch (Exception e) {
+			logger.debug("no configuration archive found");
+		}
 
 		// String rpmFile = rpmArchiver.build(profile);
 
@@ -73,9 +87,12 @@ public class Packager {
 		String tarFile = tarArchiver.build(profile);
 
 		// sshService.copyArtefact("me.rodakr.com", tarFile, "/var/tmp");
-		
-		return nexusDao.uploadArtefactToNexus(tarFile, profile);
 
+		returnStatus = nexusDao.uploadArtefactToNexus(tarFile, profile);
+
+		cleanup(profile);
+
+		return returnStatus;
 
 	}
 
@@ -169,8 +186,8 @@ public class Packager {
 
 			FileOutputStream fos = null;
 
-			String fileName = STAGING_DIR + File.separator + profile.getName() + File.separator + d.getArtifact()
-					+ "." + d.getType();
+			String fileName = STAGING_DIR + File.separator + profile.getName() + File.separator + d.getArtifact() + "."
+					+ d.getType();
 
 			if (inputStream != null) {
 				try {
@@ -201,6 +218,108 @@ public class Packager {
 						throw new IllegalStateException(e);
 					}
 				}
+			}
+
+		});
+
+	}
+
+	private void downloadConfig(Profile profile) {
+
+		String profileStagingDirectory = STAGING_DIR + File.separator + profile.getName();
+
+		// build staging folder structure
+		File theDir = new File(profileStagingDirectory);
+
+		// if staging directory exists delete content
+		if (!theDir.exists()) {
+
+			theDir.mkdir();
+		}
+
+		profile.getDeployments().stream().forEach(d -> {
+			InputStream inputStream = nexusDao.getArtefact(d.getGroupIdentification(),
+					String.format("%s-config", d.getArtifact().split("-")[0]), d.getVersion(), "zip", "releases");
+
+			FileOutputStream fos = null;
+
+			String fileName = STAGING_DIR + File.separator + profile.getName() + File.separator
+					+ String.format("%s-config.zip", d.getArtifact().split("-")[0]);
+
+			if (inputStream != null) {
+				try {
+					fos = new FileOutputStream(fileName);
+					byte[] tmp = new byte[4096];
+					int l;
+
+					while ((l = inputStream.read(tmp)) != -1) {
+						fos.write(tmp, 0, l);
+					}
+					fos.flush();
+
+					if (fos != null) {
+						fos.close();
+					}
+				} catch (Exception e) {
+					logger.error("Error retrieving configuration from NEXUS", e.getMessage());
+					throw new IllegalStateException(e);
+				} finally {
+					try {
+						inputStream.close();
+						if (fos != null) {
+							fos.close();
+						}
+
+					} catch (IOException e) {
+						logger.error("Error retrieving configuration from NEXUS", e.getMessage());
+						throw new IllegalStateException(e);
+					}
+				}
+				// http://blog.codeleak.pl/2014/06/listing-zip-file-content-java-8.html
+				try {
+					try (ZipFile zipFile = new ZipFile(fileName)) {
+						Predicate<ZipEntry> isFile = ze -> !ze.isDirectory();
+						Predicate<ZipEntry> isInGroup = ze -> Paths.get(ze.getName()).getParent().getFileName()
+								.toString().matches(String.format(".*%s", profile.getEnvironment()));
+
+						zipFile.stream().filter(isFile.and(isInGroup)).forEach(ze -> {
+
+							try {
+								int BUFFER = 2048;
+								int currentByte;
+					            // establish buffer for writing file
+					            byte data[] = new byte[BUFFER];
+
+								FileOutputStream outputfile = new FileOutputStream(STAGING_DIR + File.separator
+										+ profile.getName() + File.separator + ze.getName());
+								BufferedOutputStream dest = new BufferedOutputStream(outputfile,
+							            BUFFER);
+
+								BufferedInputStream is = new BufferedInputStream(zipFile.getInputStream(ze));
+								
+								// read and write until last byte is encountered
+					            while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
+					                dest.write(data, 0, currentByte);
+					            }
+					            dest.flush();
+					            dest.close();
+					            is.close();
+								
+								
+
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
+						});
+
+					}
+				} catch (Exception e) {
+					logger.error("Error unzipping configuration content", e.getMessage());
+					throw new IllegalStateException(e);
+				}
+
 			}
 
 		});
@@ -238,4 +357,22 @@ public class Packager {
 		}
 
 	}
+
+	private void cleanup(Profile profile) {
+
+		String profileStagingDirectory = STAGING_DIR + File.separator + profile.getName();
+
+		File theDir = new File(profileStagingDirectory);
+
+		// if staging directory exists delete content
+		if (theDir.exists()) {
+			try {
+				FileUtils.deleteDirectory(theDir);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+	}
+
 }

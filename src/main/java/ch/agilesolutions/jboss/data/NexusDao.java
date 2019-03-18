@@ -211,7 +211,7 @@ public class NexusDao {
 				}
 
 				throw new IllegalStateException(
-						new FileNotFoundException("Deployment artefact" + artefact + " not located!"));
+						new FileNotFoundException("Deployment artefact " + artefact + " not located!"));
 			}
 
 			HttpEntity entity = response.getEntity();

@@ -49,6 +49,7 @@ import ch.agilesolutions.jboss.data.JiraDao;
 import ch.agilesolutions.jboss.data.NexusDao;
 import ch.agilesolutions.jboss.data.ProfileDao;
 import ch.agilesolutions.jboss.data.ReferenceDataDao;
+import ch.agilesolutions.jboss.data.TemplateDao;
 import ch.agilesolutions.jboss.model.Artefact;
 import ch.agilesolutions.jboss.model.Deployment;
 import ch.agilesolutions.jboss.model.Domains;
@@ -113,10 +114,13 @@ public class ProfileController extends AbstractController implements Serializabl
 
 	@Inject
 	private Deployer deployer;
-	
+
 	@Inject
 	private ReferenceCache referenceCache;
 
+	@Inject
+	private TemplateDao templateDao;
+	
 	private List<Profile> profiles;
 
 	private Profile profile = new Profile();
@@ -186,6 +190,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		} catch (Exception e) {
 			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while populating profile view...", e, false);
+			return;
 		}
 		submitMessage(FacesMessage.SEVERITY_INFO, profiles.size() + " record(s) retrieved...", true);
 	}
@@ -272,6 +277,8 @@ public class ProfileController extends AbstractController implements Serializabl
 			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Selected profile ", profile.getName());
 		} else if (classifierInstance instanceof Tree) {
 			classifier = ((Tree) classifierInstance).getClassifier();
+			classifierInstance = event.getTreeNode().getData();
+			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Selected " + ((Tree) classifierInstance).getName(), ((Tree) classifierInstance).getName());
 		} else if (classifierInstance instanceof Deployment) {
 			deployment = (Deployment) classifierInstance;
 			classifierInstance = event.getTreeNode().getData();
@@ -313,8 +320,8 @@ public class ProfileController extends AbstractController implements Serializabl
 			}
 
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Exception occured during component removal...", e, false);
+			return;
 		}
 
 		refreshProfiles();
@@ -518,8 +525,8 @@ public class ProfileController extends AbstractController implements Serializabl
 			this.profile = profileDao.save(this.profile, String.format("Profile %s updated", profile.getName()));
 
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Exception occured during profile  update...", e, false);
+			return;
 		}
 
 		refreshProfiles();
@@ -548,8 +555,8 @@ public class ProfileController extends AbstractController implements Serializabl
 			this.profile = profileDao.save(this.profile, String.format("Deployment updated on profile %s", profile.getName()));
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			submitMessage(FacesMessage.SEVERITY_ERROR, "Exception occured during deployment update...", e, false);
+			return;
 		}
 
 		// RequestContext.getCurrentInstance().closeDialog("viewDeployment");
@@ -567,6 +574,7 @@ public class ProfileController extends AbstractController implements Serializabl
 			submitMessage(FacesMessage.SEVERITY_INFO, this.profile.getDescription() + " removed from the database...", true);
 		} catch (Exception e) {
 			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while removing profile from database...", e, false);
+			return;
 		}
 		// refresh table
 		refreshProfiles();
@@ -647,6 +655,10 @@ public class ProfileController extends AbstractController implements Serializabl
 		return referenceCache.getMachines();
 	}
 
+	public List<String> getGitBranchs() {
+		return templateDao.listBranches();
+	}
+	
 	public String getScript() {
 
 		return this.script;
@@ -889,6 +901,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		} catch (Exception e) {
 			submitMessage(FacesMessage.SEVERITY_WARN, "Error occurred during JSON upload...", e, false);
+			return;
 		}
 
 		submitMessage(FacesMessage.SEVERITY_INFO, String.format("Profile %s created through import", profileName), true);
@@ -919,6 +932,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		} catch (Exception e) {
 			submitMessage(FacesMessage.SEVERITY_WARN, "Error occurred during JSON upload...", e, false);
+			return;
 		}
 
 		submitMessage(FacesMessage.SEVERITY_INFO, event.getFile().getFileName() + " successfully imported", true);
@@ -1012,6 +1026,8 @@ public class ProfileController extends AbstractController implements Serializabl
 		options.put("contentWidth", 1150);
 		options.put("contentHeight", 800);
 
+		this.artefacts.clear();
+
 		deploymentStatus = "";
 
 		if (profile != null && profile.getName() != null) {
@@ -1032,11 +1048,13 @@ public class ProfileController extends AbstractController implements Serializabl
 		options.put("contentWidth", 1150);
 		options.put("contentHeight", 800);
 
+		this.artefacts.clear();
+
 		deploymentStatus = "";
 
 		if (profile != null && profile.getName() != null) {
 			deployment = new Deployment();
-			deployment.setGroupIdentification("ch.agilesolutions." + profile.getDomain());
+			deployment.setGroupIdentification("ch." + profile.getDomain());
 			deployment.setArtifact(profile.getName());
 		}
 
@@ -1087,6 +1105,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		} catch (Exception e) {
 			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while retrieving all deployments from Nexus repository...", e, false);
+			return;
 		}
 
 		submitMessage(FacesMessage.SEVERITY_INFO, String.format("%s artefacts found on NEXUS", artefacts.size()), true);
@@ -1101,6 +1120,7 @@ public class ProfileController extends AbstractController implements Serializabl
 
 		} catch (Exception e) {
 			submitMessage(FacesMessage.SEVERITY_ERROR, "Failure : Exception occured while retrieving all deployments from Nexus repository...", e, false);
+			return;
 		}
 
 		submitMessage(FacesMessage.SEVERITY_INFO, String.format("%s artefacts found on NEXUS", artefacts.size()), true);
@@ -1115,23 +1135,8 @@ public class ProfileController extends AbstractController implements Serializabl
 			submitMessage(FacesMessage.SEVERITY_INFO, String.format("Packaged %s submitted for deployment", selectedPackage.getArtifactId()), true);
 
 		} catch (Exception e) {
-			submitMessage(FacesMessage.SEVERITY_ERROR, String.format("Failure : Exception occured accesing NEXUS: %s", e.getCause().getMessage()), true);
+			submitMessage(FacesMessage.SEVERITY_ERROR, String.format("Exception occured during deployment process : %s", e.getCause().getMessage()), true);
 		}
-		// InputStream stream =
-		// FacesContext.getCurrentInstance().getExternalContext().getResourceAsStream("/dummyresponse.txt");
-		//
-		//
-		// try {
-		//
-		// Thread.sleep(5000);
-		// deploymentStatus = IOUtils.toString(stream);
-		// } catch (Exception e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
-		//
-		//
 
 	}
 
@@ -1187,12 +1192,18 @@ public class ProfileController extends AbstractController implements Serializabl
 	 * Generate package for current selected profile.
 	 */
 	public void generatePackage() {
+		
+		String response = null;
 
 		if (this.selectedTicket == null) {
 			this.selectedTicket = new JiraTicket("N/A", "No JIRA ticket selected", "closed");
 		}
-
-		String response = packager.generate(profile);
+		try {
+			response = packager.generate(profile);
+		} catch (Exception e) {
+			submitMessage(FacesMessage.SEVERITY_ERROR, String.format("Exception occured during packaing : %s", e.getCause().getMessage()), true);
+			return;
+		}
 
 		submitMessage(FacesMessage.SEVERITY_INFO, String.format("RPM package created and published to NEXUS with status %s", response), true);
 

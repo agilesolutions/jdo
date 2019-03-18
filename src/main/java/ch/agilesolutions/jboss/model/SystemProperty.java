@@ -15,7 +15,7 @@ public class SystemProperty {
 	@Expose(serialize = true)
 	private String value;
 
-	@Attribute(order = 1, length = 30, required=true, type = WidgetType.INPUT)	
+	@Attribute(order = 1, length = 60, required=true, type = WidgetType.INPUT)	
 	public String getName() {
 		return name;
 	}

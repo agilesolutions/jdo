@@ -33,14 +33,20 @@
 					update="messages,:form:tree" />
 				<p:menuitem value="Add #{profileController.classifier.simpleName}"
 					icon="ui-icon-search" id="addMenu"
-					onclick="triggerHiddenAddEvent(); return false;"/>
+					onclick="triggerHiddenAddEvent(); return false;" />
 				<p:menuitem
 					value="Update #{profileController.classifier.simpleName}"
 					icon="ui-icon-arrowrefresh-1-w" id="updateMenu"
-					onclick="triggerHiddenUpdateEvent(); return false;"/>
+					onclick="triggerHiddenUpdateEvent(); return false;" />
 				<p:menuitem value="Delete" icon="ui-icon-close"
 					onclick="PF('confirmation').show();" />
 				<p:separator />
+				<p:menuitem value="Package" icon="ui-icon-suitcase"
+					actionListener="#{profileController.showPackaging()}" />
+				<p:menuitem value="Deploy" icon="ui-icon-newwin"
+					actionListener="#{profileController.showDeploy()}" />
+				<p:menuitem value="Schedule" icon="ui-icon-calendar"
+					actionListener="#{profileController.showSchedule()}" />
 				<!-- p:menuitem value="Import" icon="/resources/images/import.png"
 					onclick="PF('resourceDialog').show();" /-->
 			</p:contextMenu>
@@ -85,7 +91,6 @@
 								listener="#{profileController.selectDomain}" />
 							<p:ajax event="itemSelect" update=":form:messages,:form:tree"
 								listener="#{profileController.selectDomain}" />
-
 						</p:autoComplete>
 
 					</f:facet>
@@ -102,7 +107,7 @@
 
 			<p:confirmDialog id="confirmDialog"
 				message="Are you sure about removing this record?"
-				header="Confirmating record removal" severity="alert"
+				header="Confirming record removal" severity="alert"
 				widgetVar="confirmation">
 
 				<p:commandButton value="Yes" update="messages,tree"
@@ -165,7 +170,7 @@
 
 					<h:outputText value="Domain" />
 
-					<p:autoComplete value="#{profileController.domain}"
+					<p:autoComplete value="#{profileController.domainName}"
 						completeMethod="#{profileController.completeDomain}"
 						update="specifyImport" style="font-size: 9px;">
 						<p:ajax event="change" update=":form:messages,:form:tree"
@@ -233,9 +238,14 @@
 					cellpadding="4">
 
 					<h:outputText value="Name" />
-					<p:autoComplete value="#{profileController.domain}"
+					<p:autoComplete value="#{profileController.domainName}"
 						completeMethod="#{profileController.completeDomain}"
 						style="font-size: 9px;">
+						<p:ajax event="change" update=":form:messages,:form:tree"
+							listener="#{profileController.selectDomainName}" />
+						<p:ajax event="itemSelect" update=":form:messages,:form:tree"
+							listener="#{profileController.selectDomainName}" />
+
 					</p:autoComplete>
 
 				</h:panelGrid>

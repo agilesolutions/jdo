@@ -18,6 +18,7 @@ import javax.ejb.Stateless;
 import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.inject.Inject;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
 import ch.agilesolutions.jboss.data.NexusDao;
@@ -29,15 +30,17 @@ import ch.agilesolutions.jboss.ssh.SSHService;
 /**
  * https://www.javacodegeeks.com/2014/07/java-ee-concurrency-api-tutorial.html
  * 
- * <dependency> <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId> <artifactId>jboss-concurrency-api_1.0_spec</artifactId> <version>1.0.0.Final</version> </dependency>
+ * <dependency> <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
+ * <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
+ * <version>1.0.0.Final</version> </dependency>
  */
 @Stateless
 public class Deployer {
 
 	private static final String STAGING_DIR = System.getProperty("jboss.server.data.dir") + "/staging";
 
-	//private static final String SERVER_ROOT = "/opt/jdo";
-	private static final String SERVER_ROOT = "/u01/data/admrun/jdo";
+	private static final String SERVER_ROOT = "/opt/jdo";
+	// private static final String SERVER_ROOT = "/u01/data/admrun/jdo";
 
 	@Inject
 	NexusDao nexusDao;
@@ -59,29 +62,64 @@ public class Deployer {
 
 		try {
 
-			filename = downloadBinary(profile, "java", profile.getJdk().split("-")[0], profile.getJdk().split("-")[1]);
+			if (!sshService.checkDirectory(host, String.format("%s/java/%s", SERVER_ROOT, profile.getJdk()))) {
 
-			returned.append(sshService.execCommand(host, String.format("mkdir -p %s", SERVER_ROOT)));
+				filename = downloadBinary(profile, "java", profile.getJdk().split("-")[0],
+						profile.getJdk().split("-")[1]);
 
-			returned.append(sshService.execCommand(host, String.format("mkdir -p %s/java", SERVER_ROOT)));
+				returned.append(sshService.execCommand(host, String.format("mkdir -p %s", SERVER_ROOT)));
 
-			returned.append(sshService.copyArtefact(host, filename, String.format("%s/java/%s.zip", SERVER_ROOT, profile.getJdk())));
+				returned.append(sshService.execCommand(host, String.format("mkdir -p %s/java", SERVER_ROOT)));
 
-			filename = downloadBinary(profile, "jboss", profile.getJboss().split("-")[0], profile.getJboss().split("-")[1]);
+				returned.append(sshService.copyArtefact(host, filename,
+						String.format("%s/java/%s.gz", SERVER_ROOT, profile.getJdk())));
+			}
 
-			returned.append(sshService.execCommand(host, String.format("mkdir -p %s/jboss", SERVER_ROOT)));
+			if (!sshService.checkDirectory(host, String.format("%s/jboss/%s", SERVER_ROOT, profile.getName()))) {
 
-			returned.append(sshService.copyArtefact(host, filename, String.format("%s/jboss/%s.zip", SERVER_ROOT, profile.getJdk())));
+				filename = downloadBinary(profile, "jboss", profile.getJboss().split("-")[0],
+						profile.getJboss().split("-")[1]);
+
+				returned.append(sshService.execCommand(host, String.format("mkdir -p %s", SERVER_ROOT)));
+
+				returned.append(sshService.execCommand(host, String.format("mkdir -p %s/jboss", SERVER_ROOT)));
+
+				returned.append(sshService.execCommand(host, String.format("mkdir -p %s/jboss/%s", SERVER_ROOT, profile.getName())));
+
+				returned.append(sshService.copyArtefact(host, filename,
+						String.format("%s/jboss/%s/%s.gz", SERVER_ROOT, profile.getName(), profile.getJboss())));
+			}
 
 			filename = downloadArtefacts(artefact, profile);
 
 			returned.append(sshService.execCommand(host, String.format("mkdir -p %s/staging", SERVER_ROOT)));
 
-			returned.append(sshService.copyArtefact(host, filename, String.format("%s/staging/%s.tar.gz", SERVER_ROOT, artefact.getArtifactId())));
+			// create artefact specific staging directory
 
-			returned.append(sshService.execCommand(host, String.format("cd %s/staging;tar -zxvf %s.tar.gz", SERVER_ROOT, artefact.getArtifactId())));
+			returned.append(sshService.execCommand(host,
+					String.format("rm -rf %s/staging/%s", SERVER_ROOT, artefact.getArtifactId())));
 
-			returned.append(sshService.execCommand(host, String.format("cd %s/staging;chmod 775 execute.sh;./execute.sh", SERVER_ROOT)));
+			returned.append(sshService.execCommand(host,
+					String.format("mkdir -p %s/staging/%s", SERVER_ROOT, artefact.getArtifactId())));
+
+			returned.append(sshService.copyArtefact(host, filename, String.format("%s/staging/%s/%s.tar.gz",
+					SERVER_ROOT, artefact.getArtifactId(), artefact.getArtifactId())));
+
+			returned.append(sshService.execCommand(host, String.format("cd %s/staging/%s;tar -zxvf %s.tar.gz",
+					SERVER_ROOT, artefact.getArtifactId(), artefact.getArtifactId())));
+
+			returned.append(sshService.execCommand(host,
+					String.format("cd %s/staging/%s;chmod 775 preinstall.sh;./preinstall.sh", SERVER_ROOT,
+							artefact.getArtifactId())));
+
+			returned.append(sshService.execCommand(host, String.format(
+					"cd %s/staging/%s;chmod 775 execute.sh;./execute.sh", SERVER_ROOT, artefact.getArtifactId())));
+
+			returned.append(sshService.execCommand(host,
+					String.format("cd %s/staging/%s;chmod 775 postinstall.sh;./postinstall.sh", SERVER_ROOT,
+							artefact.getArtifactId())));
+			
+			cleanup(profile);
 
 		} catch (Exception e) {
 			returned.append(String.format("Error copying or executing through SSH %s", e.getMessage()));
@@ -102,7 +140,8 @@ public class Deployer {
 
 		DeploymentTaskRequest request = new DeploymentTaskRequest(host, profile, artefact);
 
-		ScheduledFuture<String> futureResult = executor.schedule(new DeploymentTask(request), seconds, TimeUnit.SECONDS);
+		ScheduledFuture<String> futureResult = executor.schedule(new DeploymentTask(request), seconds,
+				TimeUnit.SECONDS);
 
 		return "done";
 
@@ -121,11 +160,13 @@ public class Deployer {
 			theDir.mkdir();
 		}
 
-		InputStream inputStream = nexusDao.getDeployment(artefact.getGroupId(), artefact.getArtifactId(), artefact.getVersion(), artefact.getPackaging());
+		InputStream inputStream = nexusDao.getDeployment(artefact.getGroupId(), artefact.getArtifactId(),
+				artefact.getVersion(), artefact.getPackaging());
 
 		FileOutputStream fos = null;
 
-		String fileName = STAGING_DIR + File.separator + artefact.getArtifactId() + File.separator + artefact.getArtifactId() + "." + artefact.getPackaging();
+		String fileName = STAGING_DIR + File.separator + artefact.getArtifactId() + File.separator
+				+ artefact.getArtifactId() + "." + artefact.getPackaging();
 
 		if (inputStream != null) {
 			try {
@@ -173,11 +214,21 @@ public class Deployer {
 
 	private String downloadBinary(Profile profile, String group, String artefact, String version) {
 
-		InputStream inputStream = nexusDao.getArtefact(group, artefact, version, "zip", "binaries");
+		InputStream inputStream = nexusDao.getArtefact(group, artefact, version, "gz", "binaries");
+
+		// build staging folder structure
+		File theDir = new File(STAGING_DIR + File.separator + profile.getName());
+
+		// if staging directory exists delete content
+		if (!theDir.exists()) {
+
+			theDir.mkdir();
+		}
 
 		FileOutputStream fos = null;
 
-		String fileName = STAGING_DIR + File.separator + profile.getName() + File.separator + artefact + "-" + version + ".zip";
+		String fileName = STAGING_DIR + File.separator + profile.getName() + File.separator + artefact + "-" + version
+				+ ".gz";
 
 		if (inputStream != null) {
 			try {
@@ -212,6 +263,23 @@ public class Deployer {
 
 		return fileName;
 
+	}
+
+	private void cleanup(Profile profile) {
+
+		String profileStagingDirectory = STAGING_DIR + File.separator + profile.getName();
+
+		File theDir = new File(profileStagingDirectory);
+
+		// if staging directory exists delete content
+		if (theDir.exists()) {
+			try {
+				FileUtils.deleteDirectory(theDir);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
 	}
 
 }

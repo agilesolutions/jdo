@@ -74,6 +74,8 @@ public class Profile {
 	private List<SocketBinding> socketBindings = new ArrayList<>();
 	@Expose(serialize = true)
 	private List<Driver> drivers = new ArrayList<>();
+	@Expose(serialize = true)
+	private String gitBranch;
 
 	@Attribute(order = 1, length = 30, required=true, type = WidgetType.INPUT)
 	public String getName() {
@@ -107,6 +109,16 @@ public class Profile {
 	public String getJboss() {
 		return jboss;
 	}
+	
+	@Attribute(order = 9, length = 60, required=true, type = WidgetType.LIST)
+	public String getGitBranch() {
+		return gitBranch;
+	}
+
+	public void setGitBranch(String gitBranch) {
+		this.gitBranch = gitBranch;
+	}
+
 
 	public void setName(String name) {
 		this.name = name;

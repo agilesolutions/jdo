@@ -47,7 +47,7 @@
 
 				<h:panelGrid columns="1">
 					<p:dataTable var="artifact" value="#{profileController.artefacts}"
-						rowKey="#{artifact.id}" paginator="true"
+						rowKey="#{artifact.id}" paginator="true" paginatorPosition="bottom"
 						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
 						rows="12" selection="#{profileController.selectedPackage}"
 						selectionMode="single" id="artifactTable">
@@ -93,7 +93,7 @@
 
 		<p:confirmDialog id="confirmDialog"
 			message="Please confirm your deployment after selecting a valid host from CMDB?"
-			header="Confirmating deployment" severity="alert"
+			header="Confirming deployment" severity="alert"
 			widgetVar="confirmation">
 
 			<h:panelGrid columns="2" columnClasses="label, value">

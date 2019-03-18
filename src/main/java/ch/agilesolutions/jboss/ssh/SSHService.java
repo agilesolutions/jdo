@@ -1,10 +1,8 @@
 package ch.agilesolutions.jboss.ssh;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ejb.Stateless;
-import javax.enterprise.inject.spi.InjectionPoint;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 
@@ -15,6 +13,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
 @Stateless
@@ -28,6 +27,32 @@ public class SSHService {
 
 	@Inject
 	SSHConnection connection;
+	
+	public boolean checkDirectory(String host, String directory)  {
+		Session session = createSSHConnection(host);
+		ChannelSftp channel = null;
+
+		try {
+
+			channel = (ChannelSftp) session.openChannel("sftp");
+			logger.debug("openChannel connected");
+			channel.connect();
+			logger.debug("channel connected.");
+			
+			channel.stat(directory);
+
+			channel.quit();
+			channel.exit();
+			channel.disconnect();
+
+		} catch (Exception e) {
+			channel.quit();
+			channel.exit();
+			channel.disconnect();
+			return false;
+		}
+		return true;
+	}
 
 	public String copyArtefact(String host, String sourceFileName, String targetFileName)  {
 		Session session = createSSHConnection(host);
