@@ -1,3 +1,3 @@
-The OpenShift `jbossas` cartridge documentation can be found at:
+# JBoss DevOps deployment tool
+Full stack JEE6, JSF/Primefaces, JPA, CDI application for managing JBoss profiles on GIT as IaC.
 
-https://github.com/openshift/origin-server/tree/master/cartridges/openshift-origin-cartridge-jbossas/README.md
